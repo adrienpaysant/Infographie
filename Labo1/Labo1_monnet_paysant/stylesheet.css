@@ -108,3 +108,18 @@ canvas {
 }
 
 
+
+a {
+	outline: none;
+	text-decoration: none;
+	display: inline-block;
+	width: 19.5%;
+	margin-right: 0.625%;
+	text-align: center;
+	line-height: 3;
+	color: grey;
+  }
+  a:hover {     
+	background:#1260a1;
+	color:white;
+  }
