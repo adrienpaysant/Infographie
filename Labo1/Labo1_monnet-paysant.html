@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="fr">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="stylesheet" href="./Labo1_monnet_paysant/stylesheet.css">
+		<script src="./Labo1_monnet_paysant/commonFunctions.js"></script>
+		<script src="./Labo1_monnet_paysant/gl-matrix-min.js"></script>
+		<script src="./Labo1_monnet_paysant/webglTools.js"></script>
+		<script id="shader-vs" type="x-shader/x-vertex">
+			attribute vec3 aVertexPosition;
+			attribute vec4 aColor;
+			uniform mat4 uMVMatrix;
+			uniform mat4 uPMatrix;
+			varying vec4 vColor;
+			void main(void) {
+				vColor = aColor;
+				gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+			}
+		</script>
+		<script id="shader-fs" type="x-shader/x-fragment">
+			#ifdef GL_ES
+				precision highp float;
+			#endif
+			varying vec4 vColor;
+			void main(void) {
+				gl_FragColor = vColor;
+			}
+		</script>
+
+		<script>
+			//"main" part
+			var MAX_SLIDER = 50;
+			var vertexBuffer = null;
+			var indexBuffer = null;
+
+			var blueColorBuffer = null;
+			var redColorBuffer = null;
+
+			var indices = [];
+			var vertices = [];
+			var colors = [];
+			var blueColors = [];
+			var redColors = [];
+			var mvMatrix = mat4.create();
+			var pMatrix = mat4.create();
+			var xTransAxis=0.0;
+			var yTransAxis=0.0;
+			var zRotAxis=0.0;
+
+
+			function change(){
+				xTransAxis = sliderX.value / MAX_SLIDER;
+				yTransAxis = sliderY.value / MAX_SLIDER;
+				zRotAxis   = sliderZ.value / MAX_SLIDER;
+			}
+
+			function initShaderParameters(prg){
+				prg.vertexPositionAttribute = glContext.getAttribLocation(prg, "aVertexPosition");
+				glContext.enableVertexAttribArray(prg.vertexPositionAttribute);
+				prg.colorAttribute 			= glContext.getAttribLocation(prg, "aColor");
+				glContext.enableVertexAttribArray(prg.colorAttribute);
+				prg.pMatrixUniform          = glContext.getUniformLocation(prg, 'uPMatrix');
+				prg.mvMatrixUniform         = glContext.getUniformLocation(prg, 'uMVMatrix');
+			}
+			function initBuffers(){
+				vertices.push(-0.5,-0.5,0.0);
+				vertices.push( 0.5,-0.5,0.0);
+				vertices.push( 0.0, 0.5,0.0);
+
+				blueColors.push(0.0,0.0,1.0,1.0);
+				blueColors.push(0.0,0.0,0.66,1.0);
+				blueColors.push(0.0,0.0,0.33,1.0);
+				blueColorBuffer  = getVertexBufferWithVertices(blueColors);
+
+				redColors.push(1.0,0.0,0.0,1.0);
+				redColors.push(0.66,0.0,0.0,1.0);
+				redColors.push(0.33,0.0,0.0,1.0);
+				redColorBuffer  = getVertexBufferWithVertices(redColors);
+
+				indices.push(0,1,2);
+				vertexBuffer = getVertexBufferWithVertices(vertices);
+				indexBuffer  = getIndexBufferWithIndices(indices);
+			}
+			
+			function drawScene(){
+				glContext.clearColor(0.9, 0.9, 1.0, 1.0);
+				glContext.enable(glContext.DEPTH_TEST);
+				glContext.clear(glContext.COLOR_BUFFER_BIT | glContext.DEPTH_BUFFER_BIT);
+				glContext.viewport(0, 0, c_width, c_height);
+
+				// Triangle 1
+				mat4.identity(pMatrix);
+				mat4.identity(mvMatrix);
+				mat4.rotate(mvMatrix, mvMatrix, zRotAxis, [0.0,0.0,1.0]);
+				mat4.translate(mvMatrix, mvMatrix, [xTransAxis,yTransAxis,0.0]);
+				drawTriangle(blueColorBuffer);
+
+				//Triangle 2
+				mat4.identity(pMatrix);
+				mat4.identity(mvMatrix);
+				mat4.translate(mvMatrix, mvMatrix, [xTransAxis,yTransAxis,0.0]);
+				mat4.rotate(mvMatrix, mvMatrix, zRotAxis, [0.0,0.0,1.0]);
+				drawTriangle(redColorBuffer);
+			}
+
+			function drawTriangle(colorBuffer){
+				glContext.uniformMatrix4fv(prg.pMatrixUniform, false, pMatrix);
+				glContext.uniformMatrix4fv(prg.mvMatrixUniform, false, mvMatrix);
+				glContext.bindBuffer(glContext.ARRAY_BUFFER, vertexBuffer);
+				glContext.vertexAttribPointer(prg.vertexPositionAttribute, 3, glContext.FLOAT, false, 0, 0);
+				glContext.bindBuffer(glContext.ARRAY_BUFFER, colorBuffer);
+				glContext.vertexAttribPointer(prg.colorAttribute, 4, glContext.FLOAT, false, 0, 0);
+				glContext.bindBuffer(glContext.ELEMENT_ARRAY_BUFFER, indexBuffer);
+				glContext.drawElements(glContext.TRIANGLE_STRIP, indices.length, glContext.UNSIGNED_SHORT,0);
+			}
+
+			function initWebGL(){
+				glContext = getGLContext('webgl-canvas');
+				initProgram();
+				initBuffers();
+				renderLoop();
+			}
+			function changeTransfOrder(){
+				console.log(document.getElementById('transfMatOrder').value);
+				if( document.getElementById('transfMatOrder').value == "P'=T.R.P" )
+					document.getElementById('transfMatOrder').value = "P'=R.T.P";
+				else
+					document.getElementById('transfMatOrder').value = "P'=T.R.P";
+			}
+		</script>
+
+	</head>
+	<body onload="initWebGL()">
+		<script>displayTitle("Infographie - Labo 1 - MONNET PAYSANT - Génération images Discovery", 1,1,1,1,1,1,1);</script>
+		<a href="#webgl-canvas">Aller directement aux manipulations.</a>
+		<h2>Choix du sujet </h2>
+        <p>Je suis l'explication du choix du sujet</p>
+		<hr>
+        <h2>Objectifs  </h2>
+        <ul>
+            <li>je suis l'élément 1 de la liste des objectifs.</li>
+            
+        </ul>
+		<hr>
+		<h2>Explications de la démarche  </h2>
+        <p>je suis la démarche</p>
+		<hr>
+		<canvas id="webgl-canvas" width="500" height="500">
+			HTML5 is not supported
+		</canvas>
+	</body>
+</html>
