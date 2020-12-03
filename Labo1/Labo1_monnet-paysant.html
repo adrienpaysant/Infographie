@@ -37,7 +37,6 @@
 		</script>
 		<script>
 			var currentTexID = 1;
-			const maxSample = 1;
 			var normalBuffer = null;
 			var vertexBuffer = null;
 			var indexBuffer = null;
@@ -55,6 +54,8 @@
 			const deltaTranslateY = 0.002;
 			var hAngle=0;
 			var vAngle=0;
+			var currentImgId    = 0;
+			const maxSample = 12; //12 car 0 1 2 3 4 5 7 8 9 + - .
 
 			function initShaderParameters(prg){
 				prg.vertexPositionAttribute = glContext.getAttribLocation(prg, "aVertexPosition");
@@ -98,6 +99,7 @@
 				mat4.rotate(mvMatrix,mvMatrix,-hAngle*3.14/180.0, [1,0,0]);
 				mat4.rotate(mvMatrix,mvMatrix,-vAngle*3.14/180.0, [0,1,0]);
 
+
 				glContext.uniformMatrix4fv(prg.pMatrixUniform, false, pMatrix);
 				glContext.uniformMatrix4fv(prg.mvMatrixUniform, false, mvMatrix);
 				glContext.bindBuffer(glContext.ARRAY_BUFFER, normalBuffer);
@@ -106,9 +108,11 @@
 				glContext.vertexAttribPointer(prg.vertexPositionAttribute, 3, glContext.FLOAT, false, 0, 0);
 				glContext.bindBuffer(glContext.ARRAY_BUFFER, textCoordsBuffer);
 				glContext.vertexAttribPointer(prg.textureCoordsAttribute, 2, glContext.FLOAT, false, 0, 0);
+
 				glContext.activeTexture(glContext.TEXTURE0);
-				glContext.bindTexture(glContext.TEXTURE_2D, texColorTab[currentTexID-1]);
+				glContext.bindTexture(glContext.TEXTURE_2D, texColorTab[currentImgId]);
 				glContext.uniform1i(prg.colorTextureUniform, 0);
+
 				glContext.uniform1f(prg.deltaTexX, textureOffsetX);
 				glContext.uniform1f(prg.deltaTexY, textureOffsetY);
 				glContext.bindBuffer(glContext.ELEMENT_ARRAY_BUFFER, indexBuffer);
@@ -118,7 +122,8 @@
 				glContext = getGLContext('webgl-canvas');
 				initProgram();
 				initBuffers();
-				initTextureWithImage( "7digits/9.png", texColorTab );
+				for( var index=0; index<=maxSample; ++index )	
+					initTextureWithImage("7digits/"+currentImgId+".png", texColorTab);
 				renderLoop();
 			}
 		</script>
@@ -137,7 +142,12 @@
 				document.getElementById("spanV").innerHTML = "<span id=\"spanV\"><label> value : "+vAngle+" </label></span>";
 			}
 
-			const LIMIT_ANGLES=45;
+			function changeButton(){
+				if( currentImgId < maxSample ) ++currentImgId;
+				else currentImgId = 0;
+				document.getElementById("spanBtnChangeImage").innerHTML = "<button id=\"imageChangeButton\" onclick=\"changeButton()\">image [" + currentImgId + "]</button>";
+				drawScene();
+			}
 		</script>
 
 	</head>
@@ -160,6 +170,7 @@
 		<hr>
 		<h2>Manipulations  </h2><br>
 		<p>
+			<span id="spanBtnChangeImage"><button id="imageChangeButton" onclick="changeButton()">image [0]</button></span><br>
 			Inclinaison du plan Horizontale : -40°<input type="range" id="sliderHorizon" value="0" min="-40" max="40" oninput="sliderHorizon();">40°
 			<span id="spanH"><label> value : 0</label></span>
 			<br>
@@ -168,7 +179,7 @@
 			<br>
 			</p>
 		<!-- WebGL canvas -->
-		<canvas id="webgl-canvas" width="800" height="500">
+		<canvas id="webgl-canvas" width="500" height="500">
 			HTML5 is not supported
 		</canvas>
 	</body>
