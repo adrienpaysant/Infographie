@@ -8,124 +8,130 @@
 		<script src="./Labo1_monnet_paysant/webglTools.js"></script>
 		<script id="shader-vs" type="x-shader/x-vertex">
 			attribute vec3 aVertexPosition;
-			attribute vec4 aColor;
+			attribute vec2 aTextureCoord;
 			uniform mat4 uMVMatrix;
 			uniform mat4 uPMatrix;
-			varying vec4 vColor;
+			varying vec2 vTextureCoord;
 			void main(void) {
-				vColor = aColor;
+				vTextureCoord = aTextureCoord;
 				gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
 			}
 		</script>
 		<script id="shader-fs" type="x-shader/x-fragment">
 			#ifdef GL_ES
-				precision highp float;
+			precision highp float;
 			#endif
-			varying vec4 vColor;
+			uniform sampler2D uColorTexture;
+			uniform float deltaTexX;
+			uniform float deltaTexY;
+			varying vec2 vTextureCoord;
 			void main(void) {
-				gl_FragColor = vColor;
+				vec2 offset = vec2(deltaTexX, deltaTexY);
+				vec2 mapCoord = vec2(vTextureCoord.s, vTextureCoord.t);
+				mapCoord += offset;
+				if(mapCoord.x > 1.0) mapCoord.x -= 1.0;
+				if(mapCoord.y > 1.0) mapCoord.y -= 1.0;
+				vec4 texelColor = texture2D(uColorTexture, mapCoord);
+				gl_FragColor = texelColor.rgba;
 			}
 		</script>
-
 		<script>
-			//"main" part
-			var MAX_SLIDER = 50;
+			var currentTexID = 1;
+			const maxSample = 1;
+			var normalBuffer = null;
 			var vertexBuffer = null;
 			var indexBuffer = null;
-
-			var blueColorBuffer = null;
-			var redColorBuffer = null;
-
+			var textCoordsBuffer = null;
+			var texColorTab = new Array();
 			var indices = [];
 			var vertices = [];
-			var colors = [];
-			var blueColors = [];
-			var redColors = [];
+			var textCoords =[];
 			var mvMatrix = mat4.create();
 			var pMatrix = mat4.create();
-			var xTransAxis=0.0;
-			var yTransAxis=0.0;
-			var zRotAxis=0.0;
-
-
-			function change(){
-				xTransAxis = sliderX.value / MAX_SLIDER;
-				yTransAxis = sliderY.value / MAX_SLIDER;
-				zRotAxis   = sliderZ.value / MAX_SLIDER;
-			}
+			var normalMatrix = mat4.create();
+			var textureOffsetX = 0.0;
+			var textureOffsetY = 0.0;
+			const deltaTranslateX = 0.001;
+			const deltaTranslateY = 0.002;
+			var hAngle=0;
+			var vAngle=0;
 
 			function initShaderParameters(prg){
 				prg.vertexPositionAttribute = glContext.getAttribLocation(prg, "aVertexPosition");
 				glContext.enableVertexAttribArray(prg.vertexPositionAttribute);
-				prg.colorAttribute 			= glContext.getAttribLocation(prg, "aColor");
-				glContext.enableVertexAttribArray(prg.colorAttribute);
+				prg.textureCoordsAttribute  = glContext.getAttribLocation(prg, "aTextureCoord");
+				glContext.enableVertexAttribArray(prg.textureCoordsAttribute);
 				prg.pMatrixUniform          = glContext.getUniformLocation(prg, 'uPMatrix');
 				prg.mvMatrixUniform         = glContext.getUniformLocation(prg, 'uMVMatrix');
+				prg.colorTextureUniform 	= glContext.getUniformLocation(prg, "uColorTexture");
+				prg.deltaTexX 				= glContext.getUniformLocation(prg, "deltaTexX");
+				prg.deltaTexY				= glContext.getUniformLocation(prg, "deltaTexY");
 			}
 			function initBuffers(){
-				vertices.push(-0.5,-0.5,0.0);
-				vertices.push( 0.5,-0.5,0.0);
-				vertices.push( 0.0, 0.5,0.0);
-
-				blueColors.push(0.0,0.0,1.0,1.0);
-				blueColors.push(0.0,0.0,0.66,1.0);
-				blueColors.push(0.0,0.0,0.33,1.0);
-				blueColorBuffer  = getVertexBufferWithVertices(blueColors);
-
-				redColors.push(1.0,0.0,0.0,1.0);
-				redColors.push(0.66,0.0,0.0,1.0);
-				redColors.push(0.33,0.0,0.0,1.0);
-				redColorBuffer  = getVertexBufferWithVertices(redColors);
-
-				indices.push(0,1,2);
-				vertexBuffer = getVertexBufferWithVertices(vertices);
-				indexBuffer  = getIndexBufferWithIndices(indices);
+				vertices = [ -1.0, -1.0, 0.0,
+							  1.0, -1.0, 0.0,
+							 -1.0,  1.0, 0.0,
+							  1.0,  1.0, 0.0 ];
+				normals = [ 0.0, 0.0, 1.0,
+							0.0, 0.0, 1.0,
+							0.0, 0.0, 1.0,
+							0.0, 0.0, 1.0 ];
+				indices = [ 0, 1, 2, 3 ];
+				textCoords = [  0.0, 0.0,
+								1.0, 0.0,
+								0.0, 1.0,
+								1.0, 1.0 ];
+				normalBuffer     = getArrayBufferWithArray(normals);
+				vertexBuffer     = getArrayBufferWithArray(vertices);
+				indexBuffer      = getIndexBufferWithIndices(indices);
+				textCoordsBuffer = getArrayBufferWithArray(textCoords);
 			}
-			
 			function drawScene(){
-				glContext.clearColor(0.9, 0.9, 1.0, 1.0);
+				glContext.clearColor(0.0, 0.0, 0.0, 1.0);
 				glContext.enable(glContext.DEPTH_TEST);
 				glContext.clear(glContext.COLOR_BUFFER_BIT | glContext.DEPTH_BUFFER_BIT);
-				glContext.viewport(0, 0, c_width, c_height);
-
-				// Triangle 1
-				mat4.identity(pMatrix);
+				glContext.viewport( 0.0, 0.0, c_width, c_height);
+				mat4.perspective(pMatrix, degToRad(60), c_width / c_height, 0.1, 1000.0);
 				mat4.identity(mvMatrix);
-				mat4.rotate(mvMatrix, mvMatrix, zRotAxis, [0.0,0.0,1.0]);
-				mat4.translate(mvMatrix, mvMatrix, [xTransAxis,yTransAxis,0.0]);
-				drawTriangle(blueColorBuffer);
+				mat4.translate(mvMatrix, mvMatrix, [0.0, 0.0, -3.0]);
+				mat4.rotate(mvMatrix,mvMatrix,-hAngle*3.14/180.0, [1,0,0]);
+				mat4.rotate(mvMatrix,mvMatrix,-vAngle*3.14/180.0, [0,1,0]);
 
-				//Triangle 2
-				mat4.identity(pMatrix);
-				mat4.identity(mvMatrix);
-				mat4.translate(mvMatrix, mvMatrix, [xTransAxis,yTransAxis,0.0]);
-				mat4.rotate(mvMatrix, mvMatrix, zRotAxis, [0.0,0.0,1.0]);
-				drawTriangle(redColorBuffer);
-			}
-
-			function drawTriangle(colorBuffer){
 				glContext.uniformMatrix4fv(prg.pMatrixUniform, false, pMatrix);
 				glContext.uniformMatrix4fv(prg.mvMatrixUniform, false, mvMatrix);
+				glContext.bindBuffer(glContext.ARRAY_BUFFER, normalBuffer);
+				glContext.vertexAttribPointer(prg.vertexNormalAttribute, 3, glContext.FLOAT, false, 0, 0);
 				glContext.bindBuffer(glContext.ARRAY_BUFFER, vertexBuffer);
 				glContext.vertexAttribPointer(prg.vertexPositionAttribute, 3, glContext.FLOAT, false, 0, 0);
-				glContext.bindBuffer(glContext.ARRAY_BUFFER, colorBuffer);
-				glContext.vertexAttribPointer(prg.colorAttribute, 4, glContext.FLOAT, false, 0, 0);
+				glContext.bindBuffer(glContext.ARRAY_BUFFER, textCoordsBuffer);
+				glContext.vertexAttribPointer(prg.textureCoordsAttribute, 2, glContext.FLOAT, false, 0, 0);
+				glContext.activeTexture(glContext.TEXTURE0);
+				glContext.bindTexture(glContext.TEXTURE_2D, texColorTab[currentTexID-1]);
+				glContext.uniform1i(prg.colorTextureUniform, 0);
+				glContext.uniform1f(prg.deltaTexX, textureOffsetX);
+				glContext.uniform1f(prg.deltaTexY, textureOffsetY);
 				glContext.bindBuffer(glContext.ELEMENT_ARRAY_BUFFER, indexBuffer);
 				glContext.drawElements(glContext.TRIANGLE_STRIP, indices.length, glContext.UNSIGNED_SHORT,0);
 			}
-
 			function initWebGL(){
 				glContext = getGLContext('webgl-canvas');
 				initProgram();
 				initBuffers();
+				initTextureWithImage( "fig/Lenna.png", texColorTab );
 				renderLoop();
 			}
-			function changeTransfOrder(){
-				console.log(document.getElementById('transfMatOrder').value);
-				if( document.getElementById('transfMatOrder').value == "P'=T.R.P" )
-					document.getElementById('transfMatOrder').value = "P'=R.T.P";
-				else
-					document.getElementById('transfMatOrder').value = "P'=T.R.P";
+		</script>
+		<script>
+			function WriteIDs(){
+				document.getElementById("spanIDs").innerHTML = "TextureID: " + currentTexID;
+			}
+			
+			function sliderHorizon(){
+				hAngle = document.getElementById("sliderHorizon").value;
+			}
+
+			function sliderVertical(){
+				vAngle = document.getElementById("sliderVertical").value;
 			}
 		</script>
 
@@ -147,7 +153,15 @@
 		<h2>Explications de la démarche  </h2>
         <p>je suis la démarche</p>
 		<hr>
-		<canvas id="webgl-canvas" width="500" height="500">
+		<h2>Manipulations  </h2><br>
+		<p>
+			Inclinaison du plan Horizontale : -30°<input type="range" id="sliderHorizon" value="-0" min="-30" max="30" oninput="sliderHorizon();">30°<br>
+			Inclinaison du plan Verticale : -30°<input type="range" id="sliderVertical" value="-0" min="-30" max="30" oninput="sliderVertical();">30°<br>
+			</p>
+			<span id="spanIDs">TextureID: 1</span>
+
+		<!-- WebGL canvas -->
+		<canvas id="webgl-canvas" width="800" height="500">
 			HTML5 is not supported
 		</canvas>
 	</body>
