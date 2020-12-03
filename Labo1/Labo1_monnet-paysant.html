@@ -68,10 +68,10 @@
 				prg.deltaTexY				= glContext.getUniformLocation(prg, "deltaTexY");
 			}
 			function initBuffers(){
-				vertices = [ -1.0, -1.0, 0.0,
-							  1.0, -1.0, 0.0,
-							 -1.0,  1.0, 0.0,
-							  1.0,  1.0, 0.0 ];
+				vertices = [ -1.50, -1.50, 0.0,
+							  1.50, -1.50, 0.0,
+							 -1.50,  1.50, 0.0,
+							  1.50,  1.50, 0.0 ];
 				normals = [ 0.0, 0.0, 1.0,
 							0.0, 0.0, 1.0,
 							0.0, 0.0, 1.0,
@@ -118,7 +118,7 @@
 				glContext = getGLContext('webgl-canvas');
 				initProgram();
 				initBuffers();
-				initTextureWithImage( "7digits/0.png", texColorTab );
+				initTextureWithImage( "7digits/9.png", texColorTab );
 				renderLoop();
 			}
 		</script>
@@ -136,13 +136,15 @@
 				vAngle = document.getElementById("sliderVertical").value;
 				document.getElementById("spanV").innerHTML = "<span id=\"spanV\"><label> value : "+vAngle+" </label></span>";
 			}
+
+			const LIMIT_ANGLES=45;
 		</script>
 
 	</head>
 	<body onload="initWebGL()">
 		<script>displayTitle("Infographie - Labo 1 - MONNET PAYSANT - Génération images Discovery", 1,1,1,1,1,1,1);</script>
 		<nav>
-		<a href="#webgl-canvas">Aller directement aux manipulations.</a>  <a href="https://github.com/adrienpaysant/Infographie/tree/main/Labo1">Lien vers le git</a>
+		<a href="#webgl-canvas">Aller directement aux manipulations.</a>  <a href="https://github.com/adrienpaysant/Infographie/tree/main/Labo1" target="_blank">Lien vers le git</a>
 		</nav>
 		<h2>Choix du sujet </h2>
         <p>Je suis l'explication du choix du sujet</p>
@@ -158,15 +160,13 @@
 		<hr>
 		<h2>Manipulations  </h2><br>
 		<p>
-			Inclinaison du plan Horizontale : -30°<input type="range" id="sliderHorizon" value="-0" min="-30" max="30" oninput="sliderHorizon();">30°
+			Inclinaison du plan Horizontale : -40°<input type="range" id="sliderHorizon" value="0" min="-40" max="40" oninput="sliderHorizon();">40°
 			<span id="spanH"><label> value : 0</label></span>
 			<br>
-			Inclinaison du plan Verticale : -30°<input type="range" id="sliderVertical" value="-0" min="-30" max="30" oninput="sliderVertical();">30°
+			Inclinaison du plan Verticale : -40°<input type="range" id="sliderVertical" value="0" min="-40" max="40" oninput="sliderVertical();">40°
 			<span id="spanV"><label> value : 0</label></span>
 			<br>
 			</p>
-			<span id="spanIDs">TextureID: 1</span>
-
 		<!-- WebGL canvas -->
 		<canvas id="webgl-canvas" width="800" height="500">
 			HTML5 is not supported
