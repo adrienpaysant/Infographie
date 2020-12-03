@@ -55,7 +55,7 @@
 			var hAngle=0;
 			var vAngle=0;
 			var currentImgId    = 0;
-			const maxSample = 12; //12 car 0 1 2 3 4 5 7 8 9 + - .
+			const maxSample = 11; //12 car 0 1 2 3 4 5 7 8 9 - .
 
 			function initShaderParameters(prg){
 				prg.vertexPositionAttribute = glContext.getAttribLocation(prg, "aVertexPosition");
@@ -98,7 +98,6 @@
 				//rotation selon les deux axes
 				mat4.rotate(mvMatrix,mvMatrix,-hAngle*3.14/180.0, [1,0,0]);
 				mat4.rotate(mvMatrix,mvMatrix,-vAngle*3.14/180.0, [0,1,0]);
-
 
 				glContext.uniformMatrix4fv(prg.pMatrixUniform, false, pMatrix);
 				glContext.uniformMatrix4fv(prg.mvMatrixUniform, false, mvMatrix);
