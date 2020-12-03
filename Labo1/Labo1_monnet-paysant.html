@@ -94,6 +94,7 @@
 				mat4.perspective(pMatrix, degToRad(60), c_width / c_height, 0.1, 1000.0);
 				mat4.identity(mvMatrix);
 				mat4.translate(mvMatrix, mvMatrix, [0.0, 0.0, -3.0]);
+				//rotation selon les deux axes
 				mat4.rotate(mvMatrix,mvMatrix,-hAngle*3.14/180.0, [1,0,0]);
 				mat4.rotate(mvMatrix,mvMatrix,-vAngle*3.14/180.0, [0,1,0]);
 
@@ -117,7 +118,7 @@
 				glContext = getGLContext('webgl-canvas');
 				initProgram();
 				initBuffers();
-				initTextureWithImage( "fig/Lenna.png", texColorTab );
+				initTextureWithImage( "7digits/0.png", texColorTab );
 				renderLoop();
 			}
 		</script>
@@ -128,10 +129,12 @@
 			
 			function sliderHorizon(){
 				hAngle = document.getElementById("sliderHorizon").value;
+				document.getElementById("spanH").innerHTML = "<span id=\"spanH\"><label> value : "+hAngle+" </label></span>";
 			}
 
 			function sliderVertical(){
 				vAngle = document.getElementById("sliderVertical").value;
+				document.getElementById("spanV").innerHTML = "<span id=\"spanV\"><label> value : "+vAngle+" </label></span>";
 			}
 		</script>
 
@@ -155,8 +158,12 @@
 		<hr>
 		<h2>Manipulations  </h2><br>
 		<p>
-			Inclinaison du plan Horizontale : -30°<input type="range" id="sliderHorizon" value="-0" min="-30" max="30" oninput="sliderHorizon();">30°<br>
-			Inclinaison du plan Verticale : -30°<input type="range" id="sliderVertical" value="-0" min="-30" max="30" oninput="sliderVertical();">30°<br>
+			Inclinaison du plan Horizontale : -30°<input type="range" id="sliderHorizon" value="-0" min="-30" max="30" oninput="sliderHorizon();">30°
+			<span id="spanH"><label> value : 0</label></span>
+			<br>
+			Inclinaison du plan Verticale : -30°<input type="range" id="sliderVertical" value="-0" min="-30" max="30" oninput="sliderVertical();">30°
+			<span id="spanV"><label> value : 0</label></span>
+			<br>
 			</p>
 			<span id="spanIDs">TextureID: 1</span>
 
