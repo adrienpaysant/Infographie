@@ -87,6 +87,21 @@
 				indexBuffer      = getIndexBufferWithIndices(indices);
 				textCoordsBuffer = getArrayBufferWithArray(textCoords);
 			}
+			function initMaterialProperties(){
+				switch( currentImgId ) {
+					case 1: glContext.uniform3f(prg.ambUniform, 0.5, 0.5, 0.5); break;
+					case 2: glContext.uniform3f(prg.ambUniform, 0.9, 0.5, 0.5); break;
+					case 3: glContext.uniform3f(prg.ambUniform, 0.5, 0.5, 0.5); break;
+					case 4: glContext.uniform3f(prg.ambUniform, 0.5, 0.5, 0.5); break;
+					case 5: glContext.uniform3f(prg.ambUniform, 0.3, 0.3, 0.3); break;
+					case 6: glContext.uniform3f(prg.ambUniform, 0.3, 0.3, 0.3); break;
+					case 7: glContext.uniform3f(prg.ambUniform, 0.3, 0.3, 0.3); break;
+					case 8: glContext.uniform3f(prg.ambUniform, 0.3, 0.3, 0.3); break;
+					case 9: glContext.uniform3f(prg.ambUniform, 0.3, 0.3, 0.3); break;
+					case 10: glContext.uniform3f(prg.ambUniform, 0.3, 0.3, 0.3); break;
+				}
+			}
+
 			function drawScene(){
 				glContext.clearColor(0.0, 0.0, 0.0, 1.0);
 				glContext.enable(glContext.DEPTH_TEST);
@@ -99,6 +114,8 @@
 				mat4.rotate(mvMatrix,mvMatrix,-hAngle*3.14/180.0, [1,0,0]);
 				mat4.rotate(mvMatrix,mvMatrix,-vAngle*3.14/180.0, [0,1,0]);
 
+				initMaterialProperties();
+
 				glContext.uniformMatrix4fv(prg.pMatrixUniform, false, pMatrix);
 				glContext.uniformMatrix4fv(prg.mvMatrixUniform, false, mvMatrix);
 				glContext.bindBuffer(glContext.ARRAY_BUFFER, normalBuffer);
@@ -110,7 +127,7 @@
 
 				glContext.activeTexture(glContext.TEXTURE0);
 				glContext.bindTexture(glContext.TEXTURE_2D, texColorTab[currentImgId]);
-				glContext.uniform1i(prg.colorTextureUniform, 0);
+				glContext.uniform1i(prg.uColorTexture, 0);
 
 				glContext.uniform1f(prg.deltaTexX, textureOffsetX);
 				glContext.uniform1f(prg.deltaTexY, textureOffsetY);
@@ -121,8 +138,9 @@
 				glContext = getGLContext('webgl-canvas');
 				initProgram();
 				initBuffers();
+				initMaterialProperties();
 				for( var index=0; index<=maxSample; ++index )	
-					initTextureWithImage("7digits/"+currentImgId+".png", texColorTab);
+					initTextureWithImage("7digits/"+index+".png", texColorTab);
 				renderLoop();
 			}
 		</script>
