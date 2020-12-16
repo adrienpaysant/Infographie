@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 	<head>
@@ -7,88 +8,164 @@
 		<script src="./Labo1_monnet_paysant/gl-matrix-min.js"></script>
 		<script src="./Labo1_monnet_paysant/webglTools.js"></script>
 		<script id="shader-vs" type="x-shader/x-vertex">
+		    attribute vec3 aVertexNormal;
 			attribute vec3 aVertexPosition;
 			attribute vec2 aTextureCoord;
+			attribute vec3 aTangent;
+			uniform mat4 uNMatrix;
 			uniform mat4 uMVMatrix;
 			uniform mat4 uPMatrix;
+			uniform vec3 uLightPosition;
 			varying vec2 vTextureCoord;
+			varying vec3 vNormal;
+			varying vec3 vLightRay;
+			varying vec3 vEyeVec;
+			varying mat3 tbn;
 			void main(void) {
 				vTextureCoord = aTextureCoord;
-				gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+				vec4 vertex = uMVMatrix * vec4(aVertexPosition, 1.0);
+				vNormal = vec3(uNMatrix * vec4(aVertexNormal, 1.0));
+			    vec4 vTangent = normalize( uNMatrix * vec4(aTangent, 1.0) );
+			    vec3 vBitangent = normalize(cross( vNormal, vTangent.xyz ));
+			    tbn = mat3(vTangent, vBitangent, vNormal);
+				vLightRay = vertex.xyz - uLightPosition;
+				vEyeVec = -vec3(vertex.xyz);
+				gl_Position = uPMatrix * vertex;
 			}
 		</script>
 		<script id="shader-fs" type="x-shader/x-fragment">
 			#ifdef GL_ES
 			precision highp float;
 			#endif
+			uniform float uShininess;
+			uniform float lightIntensity;
+			uniform vec3 uLightAmbient;
+			uniform vec3 uMaterialDiffuse;
+			uniform vec3 uMaterialSpecular;
+			uniform bool usingColorMap;
+			uniform bool usingNormalMap;
+			uniform bool usingSpecularMap;
 			uniform sampler2D uColorTexture;
-			uniform float deltaTexX;
-			uniform float deltaTexY;
+			uniform sampler2D uNormalMap;
+			uniform sampler2D uSpecularMap;
 			varying vec2 vTextureCoord;
+			varying vec3 vNormal;
+			varying vec3 vLightRay;
+			varying vec3 vEyeVec;
+			varying mat3 tbn;
 			void main(void) {
-				vec2 offset = vec2(deltaTexX, deltaTexY);
+				float squaredDistanceToLight = vLightRay.x*vLightRay.x+vLightRay.y*vLightRay.y+vLightRay.z*vLightRay.z;
+				vec3 L = normalize(vLightRay);
+				vec3 N ;
 				vec2 mapCoord = vec2(vTextureCoord.s, vTextureCoord.t);
-				mapCoord += offset;
-				if(mapCoord.x > 1.0) mapCoord.x -= 1.0;
-				if(mapCoord.y > 1.0) mapCoord.y -= 1.0;
-				vec4 texelColor = texture2D(uColorTexture, mapCoord);
-				gl_FragColor = texelColor.rgba;
+				vec3 baseColor = vec3(1.0,1.0,1.0);
+				vec3 normalVector = vNormal;
+				vec3 specVector ;
+				vec3 finalColor = uLightAmbient;
+				if( usingColorMap ) baseColor = vec3(texture2D(uColorTexture, mapCoord));
+				else baseColor = vec3(0.5, 0.5, 0.5);
+				if( usingNormalMap ){
+					normalVector = normalize(vec3(2.0*texture2D(uNormalMap, mapCoord).rgb - 1.0));
+					normalVector = tbn * normalVector;
+				}
+				if( usingSpecularMap ) specVector = vec3(texture2D(uSpecularMap, mapCoord));
+				else specVector = vec3( 0.0, 0.0, 0.0 );
+				if( usingNormalMap || usingSpecularMap ){
+					N = normalize(normalVector);
+					float lambertTerm = dot(N,-L);
+					float specular = 0.0;
+					if(lambertTerm > 0.0)
+					{
+						finalColor +=  uMaterialDiffuse * lambertTerm;
+						vec3 E = normalize(vEyeVec);
+						vec3 R = reflect(L, N);
+						specular = pow( max(dot(R, E), 0.0), uShininess);
+						finalColor += specVector * uMaterialSpecular * specular;
+					}
+				}
+				finalColor *= baseColor.xyz * lightIntensity / squaredDistanceToLight;
+				gl_FragColor = vec4(finalColor, 1.0);
 			}
 		</script>
 		<script>
-			var currentTexID = 1;
+            var hAngle=0;
+			var vAngle=0;
+			var currentColorMapID    = 1;
+			var currentNormalMapID   = 1;
+			var currentSpecularMapID = 1;
+			const M_PI = 3.1415926535897932384626433832795;
+			const M_2PI = 2.0*M_PI;
+			const maxSample = 11;
 			var normalBuffer = null;
 			var vertexBuffer = null;
-			var indexBuffer = null;
+			var indexBuffer  = null;
 			var textCoordsBuffer = null;
+			var tangentsBuffer = null;
 			var texColorTab = new Array();
-			var indices = [];
-			var vertices = [];
-			var textCoords =[];
+			var texNormalTab = new Array();
+			var texSpecTab  = new Array();
+			var indices    = [];
+			var vertices   = [];
+			var textCoords = [];
 			var mvMatrix = mat4.create();
-			var pMatrix = mat4.create();
-			var normalMatrix = mat4.create();
-			var textureOffsetX = 0.0;
-			var textureOffsetY = 0.0;
-			const deltaTranslateX = 0.001;
-			const deltaTranslateY = 0.002;
-			var hAngle=0;
-			var vAngle=0;
-			var currentImgId    = 0;
-			const maxSample = 11; //11 car 0 1 2 3 4 5 7 8 9 - .
-
+			var pMatrix  = mat4.create();
+			var nMatrix  = mat4.create();
+			var rotLight = 0;
+			var lightRotRadius = 2.0
+			var currentLightIntensity = 10.0;
+			var objectInRotation = 1;
+			var quadAngle = 45;
 			function initShaderParameters(prg){
+				prg.vertexNormalAttribute   = glContext.getAttribLocation(prg, "aVertexNormal");
+				glContext.enableVertexAttribArray(prg.vertexNormalAttribute);
 				prg.vertexPositionAttribute = glContext.getAttribLocation(prg, "aVertexPosition");
 				glContext.enableVertexAttribArray(prg.vertexPositionAttribute);
 				prg.textureCoordsAttribute  = glContext.getAttribLocation(prg, "aTextureCoord");
 				glContext.enableVertexAttribArray(prg.textureCoordsAttribute);
+				prg.tangentsAttribute  = glContext.getAttribLocation(prg, "aTangent");
+				glContext.enableVertexAttribArray(prg.tangentsAttribute);
 				prg.pMatrixUniform          = glContext.getUniformLocation(prg, 'uPMatrix');
 				prg.mvMatrixUniform         = glContext.getUniformLocation(prg, 'uMVMatrix');
-				prg.colorTextureUniform 	= glContext.getUniformLocation(prg, "uColorTexture");
-				prg.deltaTexX 				= glContext.getUniformLocation(prg, "deltaTexX");
-				prg.deltaTexY				= glContext.getUniformLocation(prg, "deltaTexY");
+				prg.nMatrixUniform	        = glContext.getUniformLocation(prg, "uNMatrix");
+			    prg.lightPositionUniform    = glContext.getUniformLocation(prg, 'uLightPosition');
+			    prg.shininessUniform        = glContext.getUniformLocation(prg, 'uShininess');
+			    prg.lightIntensityUniform   = glContext.getUniformLocation(prg, 'lightIntensity');
+			    prg.ambUniform     = glContext.getUniformLocation(prg, 'uLightAmbient');
+			    prg.difUniform  = glContext.getUniformLocation(prg, 'uMaterialDiffuse');
+			    prg.specUniform = glContext.getUniformLocation(prg, 'uMaterialSpecular');
+				prg.usingColorMapUniform    = glContext.getUniformLocation(prg, 'usingColorMap');
+				prg.usingNormalMapUniform   = glContext.getUniformLocation(prg, 'usingNormalMap');
+				prg.usingSpecularMapUniform = glContext.getUniformLocation(prg, 'usingSpecularMap');
+				prg.uColorTexture 			= glContext.getUniformLocation(prg, "uColorTexture");
+				prg.uNormalMap   			= glContext.getUniformLocation(prg, "uNormalMap");
+				prg.uSpecularMap   			= glContext.getUniformLocation(prg, "uSpecularMap");
 			}
 			function initBuffers(){
-				vertices = [ -1.50, -1.50, 0.0,
-							  1.50, -1.50, 0.0,
-							 -1.50,  1.50, 0.0,
-							  1.50,  1.50, 0.0 ];
-				normals = [ 0.0, 0.0, 1.0,
-							0.0, 0.0, 1.0,
-							0.0, 0.0, 1.0,
-							0.0, 0.0, 1.0 ];
+				vertices = [ -1.0, -1.0, 0.0,
+							  1.0, -1.0, 0.0,
+							 -1.0,  1.0, 0.0,
+							  1.0,  1.0, 0.0 ];
+				normals = [ 0.0, 0.0, 1,
+							0.0, 0.0, 1,
+							0.0, 0.0, 1,
+							0.0, 0.0, 1 ];
 				indices = [ 0, 1, 2, 3 ];
 				textCoords = [  0.0, 0.0,
 								1.0, 0.0,
 								0.0, 1.0,
 								1.0, 1.0 ];
+				tangents = [ 1.0, 0.0, 0.0,
+							 1.0, 0.0, 0.0,
+							 1.0, 0.0, 0.0,
+							 1.0, 0.0, 0.0];
 				normalBuffer     = getArrayBufferWithArray(normals);
 				vertexBuffer     = getArrayBufferWithArray(vertices);
 				indexBuffer      = getIndexBufferWithIndices(indices);
 				textCoordsBuffer = getArrayBufferWithArray(textCoords);
+				tangentsBuffer = getArrayBufferWithArray(tangents);
 			}
 			function initMaterialProperties(){
-				switch( currentImgId ) {
+				switch( currentColorMapID ) {
 					case 1: glContext.uniform3f(prg.ambUniform, 0.5, 0.5, 0.5); break;
 					case 2: glContext.uniform3f(prg.ambUniform, 0.9, 0.5, 0.5); break;
 					case 3: glContext.uniform3f(prg.ambUniform, 0.5, 0.5, 0.5); break;
@@ -100,8 +177,71 @@
 					case 9: glContext.uniform3f(prg.ambUniform, 0.3, 0.3, 0.3); break;
 					case 10: glContext.uniform3f(prg.ambUniform, 0.3, 0.3, 0.3); break;
 				}
+				switch( currentNormalMapID ) {
+					case 1: glContext.uniform3f(prg.difUniform, 0.4, 0.4, 0.4); break;
+					case 2: glContext.uniform3f(prg.difUniform, 0.4, 0.4, 0.4); break;
+					case 3: glContext.uniform3f(prg.difUniform, 0.4, 0.4, 0.4); break;
+					case 4: glContext.uniform3f(prg.difUniform, 0.2, 0.2, 0.3); break;
+					case 5: glContext.uniform3f(prg.difUniform, 0.6, 0.7, 0.6); break;
+					case 6: glContext.uniform3f(prg.difUniform, 0.6, 0.7, 0.6); break;
+					case 7: glContext.uniform3f(prg.difUniform, 0.6, 0.7, 0.6); break;
+					case 8: glContext.uniform3f(prg.difUniform, 0.6, 0.7, 0.6); break;
+					case 9: glContext.uniform3f(prg.difUniform, 0.6, 0.7, 0.6); break;
+					case 10: glContext.uniform3f(prg.difUniform, 0.6, 0.7, 0.6); break;
+				}
+				switch( currentSpecularMapID ) {
+					case 1: {
+							glContext.uniform3f(prg.specUniform, 0.2, 0.2, 0.2);
+							glContext.uniform1f(prg.shininessUniform, 1.0);
+						} break;
+					case 2: {
+							glContext.uniform3f(prg.specUniform, 1.0, 1.0, 1.0);
+							glContext.uniform1f(prg.shininessUniform, 4.0);
+						} break;
+					case 3: {
+							glContext.uniform3f(prg.specUniform, 0.8, 0.8, 0.7);
+							glContext.uniform1f(prg.shininessUniform, 8.0);
+						} break;
+					case 4: {
+							glContext.uniform3f(prg.specUniform, 1.0, 1.0, 1.0);
+							glContext.uniform1f(prg.shininessUniform, 14.0);
+						} break;
+					case 5: {
+							glContext.uniform3f(prg.specUniform, 1.0, 0.3, 1.0);
+							glContext.uniform1f(prg.shininessUniform, 2.0);
+						} break;
+					case 6: {
+							glContext.uniform3f(prg.specUniform, 1.0, 0.3, 1.0);
+							glContext.uniform1f(prg.shininessUniform, 2.0);
+						} break;
+					case 7: {
+							glContext.uniform3f(prg.specUniform, 1.0, 0.3, 1.0);
+							glContext.uniform1f(prg.shininessUniform, 2.0);
+						} break;
+					case 8: {
+							glContext.uniform3f(prg.specUniform, 1.0, 0.3, 1.0);
+							glContext.uniform1f(prg.shininessUniform, 2.0);
+						} break;
+					case 9: {
+							glContext.uniform3f(prg.specUniform, 1.0, 0.3, 1.0);
+							glContext.uniform1f(prg.shininessUniform, 2.0);
+						} break;
+					case 10: {
+							glContext.uniform3f(prg.specUniform, 1.0, 0.3, 1.0);
+							glContext.uniform1f(prg.shininessUniform, 2.0);
+						} break;
+				}
 			}
-
+			function setLightPositionAndIntensity()
+			{
+				if( document.getElementById("animateCheckBox").checked )
+				{
+					rotLight += 0.03;
+					if( rotLight>M_2PI) rotLight = -M_2PI;
+				}
+				glContext.uniform3f(prg.lightPositionUniform, lightRotRadius*Math.cos(rotLight), lightRotRadius*Math.sin(rotLight), 1.0);
+				glContext.uniform1f(prg.lightIntensityUniform, currentLightIntensity );
+			}
 			function drawScene(){
 				glContext.clearColor(0.990, 1.00, 1.00, 1.0);
 				glContext.enable(glContext.DEPTH_TEST);
@@ -109,28 +249,40 @@
 				glContext.viewport( 0.0, 0.0, c_width, c_height);
 				mat4.perspective(pMatrix, degToRad(60), c_width / c_height, 0.1, 1000.0);
 				mat4.identity(mvMatrix);
-				mat4.translate(mvMatrix, mvMatrix, [0.0, 0.0, -3.0]);
-				//rotation selon les deux axes
+                mat4.translate(mvMatrix, mvMatrix, [0.0, 0.0, -2.0]);
+                
+                		//rotation selon les deux axes
 				mat4.rotate(mvMatrix,mvMatrix,-hAngle*3.14/180.0, [1,0,0]);
-				mat4.rotate(mvMatrix,mvMatrix,-vAngle*3.14/180.0, [0,1,0]);
-
-				initMaterialProperties();
-
+                mat4.rotate(mvMatrix,mvMatrix,-vAngle*3.14/180.0, [0,1,0]);
+                
+				setLightPositionAndIntensity();
 				glContext.uniformMatrix4fv(prg.pMatrixUniform, false, pMatrix);
 				glContext.uniformMatrix4fv(prg.mvMatrixUniform, false, mvMatrix);
+			    mat4.copy(nMatrix, mvMatrix);
+			    mat4.invert(nMatrix, nMatrix);
+			    mat4.transpose(nMatrix, nMatrix);
+			    glContext.uniformMatrix4fv(prg.nMatrixUniform, false, nMatrix);
+				initMaterialProperties();
+				glContext.uniform1i(prg.usingColorMapUniform, document.getElementById( "useColorMapCheckBox" ).checked);
+				glContext.uniform1i(prg.usingNormalMapUniform, document.getElementById( "useNormalMapCheckBox" ).checked);
+				glContext.uniform1i(prg.usingSpecularMapUniform, document.getElementById( "useSpecularMapCheckBox" ).checked);
 				glContext.bindBuffer(glContext.ARRAY_BUFFER, normalBuffer);
 				glContext.vertexAttribPointer(prg.vertexNormalAttribute, 3, glContext.FLOAT, false, 0, 0);
 				glContext.bindBuffer(glContext.ARRAY_BUFFER, vertexBuffer);
 				glContext.vertexAttribPointer(prg.vertexPositionAttribute, 3, glContext.FLOAT, false, 0, 0);
 				glContext.bindBuffer(glContext.ARRAY_BUFFER, textCoordsBuffer);
 				glContext.vertexAttribPointer(prg.textureCoordsAttribute, 2, glContext.FLOAT, false, 0, 0);
-
+				glContext.bindBuffer(glContext.ARRAY_BUFFER, tangentsBuffer);
+				glContext.vertexAttribPointer(prg.tangentsAttribute, 3, glContext.FLOAT, false, 0, 0);
 				glContext.activeTexture(glContext.TEXTURE0);
-				glContext.bindTexture(glContext.TEXTURE_2D, texColorTab[currentImgId]);
+				glContext.bindTexture(glContext.TEXTURE_2D, texColorTab[currentColorMapID]);
 				glContext.uniform1i(prg.uColorTexture, 0);
-
-				glContext.uniform1f(prg.deltaTexX, textureOffsetX);
-				glContext.uniform1f(prg.deltaTexY, textureOffsetY);
+				glContext.activeTexture(glContext.TEXTURE1);
+				glContext.bindTexture(glContext.TEXTURE_2D, texNormalTab[currentNormalMapID-1]);
+				glContext.uniform1i(prg.uNormalMap, 1);
+				glContext.activeTexture(glContext.TEXTURE2);
+				glContext.bindTexture(glContext.TEXTURE_2D, texSpecTab[currentSpecularMapID-1]);
+				glContext.uniform1i(prg.uSpecularMap, 2);
 				glContext.bindBuffer(glContext.ELEMENT_ARRAY_BUFFER, indexBuffer);
 				glContext.drawElements(glContext.TRIANGLE_STRIP, indices.length, glContext.UNSIGNED_SHORT,0);
 			}
@@ -139,17 +291,38 @@
 				initProgram();
 				initBuffers();
 				initMaterialProperties();
-				for( var index=0; index<=maxSample; ++index )	
-					initTextureWithImage("7digits/"+index+".png", texColorTab);
+				for( var index=0; index<=maxSample; ++index ) {
+					var fileName = "7digits/";
+					initTextureWithImage(fileName+index+".png", texColorTab);
+				}
 				renderLoop();
 			}
 		</script>
 		<script>
-			function WriteIDs(){
-				document.getElementById("spanIDs").innerHTML = "TextureID: " + currentTexID;
+			function changeColorMap(){
+				if( currentColorMapID < maxSample ) ++currentColorMapID;
+				else currentColorMapID = 0;
+				document.getElementById("spanID1").innerHTML = "<button id='colorMapButton' onclick='changeColorMap()'>Texture [" + currentColorMapID + "]</button>";
 			}
-			
-			function sliderHorizon(){
+			function changeNormalMap(){
+				if( currentNormalMapID < maxSample ) ++currentNormalMapID;
+				else currentNormalMapID = 1;
+				document.getElementById("spanID2").innerHTML = "<button id='normalMapButton' onclick='changeNormalMap()'>normal map [" + currentNormalMapID + "]</button>";
+			}
+			function changeSpecularMap(){
+				if( currentSpecularMapID < maxSample ) ++currentSpecularMapID;
+				else currentSpecularMapID = 1;
+				document.getElementById("spanID3").innerHTML = "<button id='specularMapButton' onclick='changeSpecularMap()'>specular map [" + currentSpecularMapID + "]</button>";
+			}
+			function changeTheMapUse( checkboxID, buttonID ){
+				console.log( checkboxID +" - "+ buttonID);
+				if( document.getElementById( checkboxID ).checked ) document.getElementById( buttonID ).disabled = false;
+				else document.getElementById( buttonID ).disabled = true;
+			}
+			function sliderRotLightRadiusChanged(){
+				lightRotRadius = document.getElementById("rotLightRadiusSlider").value/10.0;
+            }
+            function sliderHorizon(){
 				hAngle = document.getElementById("sliderHorizon").value;
 				document.getElementById("spanH").innerHTML = "<span id=\"spanH\"><label> value : "+hAngle+" </label></span>";
 			}
@@ -159,17 +332,13 @@
 				document.getElementById("spanV").innerHTML = "<span id=\"spanV\"><label> value : "+vAngle+" </label></span>";
 			}
 
-			function changeButton(){
-				if( currentImgId < maxSample ) ++currentImgId;
-				else currentImgId = 0;
-				document.getElementById("spanBtnChangeImage").innerHTML = "<button id=\"imageChangeButton\" onclick=\"changeButton()\">image [" + currentImgId + "]</button>";
-				drawScene();
+			function sliderLightIntensityChanged(){
+				currentLightIntensity = document.getElementById("lightIntensitySlider").value;
 			}
 		</script>
-
 	</head>
 	<body onload="initWebGL()">
-		<script>displayTitle("Infographie - Labo 1 - MONNET PAYSANT - Génération images Discovery", 1,1,1,1,1,1,1);</script>
+        <script>displayTitle("Infographie - Labo 1 - MONNET PAYSANT - Génération images Discovery", 1,1,1,1,1,1,1);</script>
 		<nav>
 		<a href="#webgl-canvas">Aller directement aux manipulations.</a>  <a href="https://github.com/adrienpaysant/Infographie/tree/main/Labo1" target="_blank">Lien vers le git</a>
 		</nav>
@@ -185,17 +354,24 @@
         <p>je suis la démarche</p>
 		<hr>
 		<h2>Manipulations  </h2><br>
-		<p>
-			<span id="spanBtnChangeImage"><button id="imageChangeButton" onclick="changeButton()">image [0]</button></span><br>
-			Inclinaison du plan Horizontale : -40°<input type="range" id="sliderHorizon" value="0" min="-40" max="40" oninput="sliderHorizon();">40°
+        <p>
+			<input id="useColorMapCheckBox" type="checkbox" checked=true onchange="changeTheMapUse( 'useColorMapCheckBox', 'colorMapButton' )">Texture</input>
+			<input id="useNormalMapCheckBox" type="checkbox" checked=true onchange="changeTheMapUse( 'useNormalMapCheckBox', 'normalMapButton' )">NormalMap</input>
+			<input id="useSpecularMapCheckBox" type="checkbox" checked=true oninput=="changeTheMapUse( 'useSpecularMapCheckBox', 'specularMapButton' )">SpecularMap</input>
+			<br />
+			<span id="spanID1"><button id="colorMapButton" onclick="changeColorMap()">Texture [1]</button></span>
+		</p>
+		<input id="animateCheckBox" type="checkbox" checked=true onchange="animateObject()">Rotation de la source de lumière</input> de rayon : 0.1<input type="range" id="rotLightRadiusSlider" value="20" min="1" max="200" oninput="sliderRotLightRadiusChanged();">20.0<br />
+		Intensité de la lumière : 1.0<input type="range" id="lightIntensitySlider" value="50" min="1" max="100" oninput="sliderLightIntensityChanged();">100.0<br />
+        
+        Inclinaison du plan Horizontale : -40°<input type="range" id="sliderHorizon" value="0" min="-40" max="40" oninput="sliderHorizon();">40°
 			<span id="spanH"><label> value : 0</label></span>
 			<br>
 			Inclinaison du plan Verticale : -40°<input type="range" id="sliderVertical" value="0" min="-40" max="40" oninput="sliderVertical();">40°
 			<span id="spanV"><label> value : 0</label></span>
-			<br>
-			</p>
-		<!-- WebGL canvas -->
-		<canvas id="webgl-canvas" width="500" height="500">
+            <br>
+        <!-- WebGL canvas -->
+		<canvas id="webgl-canvas" width="800" height="500">
 			HTML5 is not supported
 		</canvas>
 	</body>
