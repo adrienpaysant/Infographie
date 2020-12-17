@@ -46,6 +46,7 @@
 			uniform bool usingNormalMap;
 			uniform bool usingSpecularMap;
 			uniform sampler2D uColorTexture;
+			uniform sampler2D uColorDirt;
 			uniform sampler2D uNormalMap;
 			uniform sampler2D uSpecularMap;
 			varying vec2 vTextureCoord;
@@ -62,7 +63,8 @@
 				vec3 normalVector = vNormal;
 				vec3 specVector ;
 				vec3 finalColor = uLightAmbient;
-				if( usingColorMap ) baseColor = vec3(texture2D(uColorTexture, mapCoord));
+				if( usingColorMap ) baseColor = vec3(texture2D(uColorTexture, mapCoord))/*+vec3(texture2D(uColorDirt, mapCoord))*/;//TODO
+				//todo moduler par un pourcentage
 				else baseColor = vec3(0.5, 0.5, 0.5);
 				if( usingNormalMap ){
 					normalVector = normalize(vec3(2.0*texture2D(uNormalMap, mapCoord).rgb - 1.0));
@@ -137,23 +139,24 @@
 				prg.usingNormalMapUniform   = glContext.getUniformLocation(prg, 'usingNormalMap');
 				prg.usingSpecularMapUniform = glContext.getUniformLocation(prg, 'usingSpecularMap');
 				prg.uColorTexture 			= glContext.getUniformLocation(prg, "uColorTexture");
+				prg.uColorDirt 			= glContext.getUniformLocation(prg, "uColorDirt");
 				prg.uNormalMap   			= glContext.getUniformLocation(prg, "uNormalMap");
 				prg.uSpecularMap   			= glContext.getUniformLocation(prg, "uSpecularMap");
 			}
 			function initBuffers(){
-				vertices = [ -1.0, -1.0, 0.0,
-							  1.0, -1.0, 0.0,
-							 -1.0,  1.0, 0.0,
-							  1.0,  1.0, 0.0 ];
+				vertices = [ -6.0, -6.0, 0.0,
+							  6.0, -6.0, 0.0,
+							 -6.0,  6.0, 0.0,
+							  6.0,  6.0, 0.0 ];
 				normals = [ 0.0, 0.0, 1,
 							0.0, 0.0, 1,
 							0.0, 0.0, 1,
 							0.0, 0.0, 1 ];
 				indices = [ 0, 1, 2, 3 ];
-				textCoords = [  0.0, 0.0,
-								1.0, 0.0,
-								0.0, 1.0,
-								1.0, 1.0 ];
+				textCoords = [  -3.0, -3.0,
+								4.0, -3.0,
+								-3.0, 4.0,
+								4.0, 4.0 ];
 				tangents = [ 1.0, 0.0, 0.0,
 							 1.0, 0.0, 0.0,
 							 1.0, 0.0, 0.0,
@@ -277,12 +280,14 @@
 				glContext.activeTexture(glContext.TEXTURE0);
 				glContext.bindTexture(glContext.TEXTURE_2D, texColorTab[currentColorMapID]);
 				glContext.uniform1i(prg.uColorTexture, 0);
+
+				glContext.activeTexture(glContext.TEXTURE2);
+				glContext.bindTexture(glContext.TEXTURE_2D, texSpecTab[currentColorMapID]);//TODO changer nom de spec pour dirtcolor
+				glContext.uniform1i(prg.uColorTexture, 0);
+
 				glContext.activeTexture(glContext.TEXTURE1);
 				glContext.bindTexture(glContext.TEXTURE_2D, texNormalTab[currentNormalMapID-1]);
 				glContext.uniform1i(prg.uNormalMap, 1);
-				glContext.activeTexture(glContext.TEXTURE2);
-				glContext.bindTexture(glContext.TEXTURE_2D, texSpecTab[currentSpecularMapID-1]);
-				glContext.uniform1i(prg.uSpecularMap, 2);
 				glContext.bindBuffer(glContext.ELEMENT_ARRAY_BUFFER, indexBuffer);
 				glContext.drawElements(glContext.TRIANGLE_STRIP, indices.length, glContext.UNSIGNED_SHORT,0);
 			}
@@ -364,15 +369,48 @@
 		<input id="animateCheckBox" type="checkbox" checked=true onchange="animateObject()">Rotation de la source de lumière</input> de rayon : 0.1<input type="range" id="rotLightRadiusSlider" value="20" min="1" max="200" oninput="sliderRotLightRadiusChanged();">20.0<br />
 		Intensité de la lumière : 1.0<input type="range" id="lightIntensitySlider" value="50" min="1" max="100" oninput="sliderLightIntensityChanged();">100.0<br />
         
-        Inclinaison du plan Horizontale : -40°<input type="range" id="sliderHorizon" value="0" min="-40" max="40" oninput="sliderHorizon();">40°
+        Inclinaison du plan Horizontale : -30°<input type="range" id="sliderHorizon" value="0"  step="15" min="-30" max="30" oninput="sliderHorizon();">30°
 			<span id="spanH"><label> value : 0</label></span>
 			<br>
-			Inclinaison du plan Verticale : -40°<input type="range" id="sliderVertical" value="0" min="-40" max="40" oninput="sliderVertical();">40°
+			Inclinaison du plan Verticale : -30°<input type="range" id="sliderVertical" step="15" value="0" min="-30" max="30" oninput="sliderVertical();">30°
 			<span id="spanV"><label> value : 0</label></span>
             <br>
         <!-- WebGL canvas -->
-		<canvas id="webgl-canvas" width="800" height="500">
+		<canvas id="webgl-canvas" width="400" height="400">
 			HTML5 is not supported
 		</canvas>
+		<br>
+		<canvas id="canvas"></canvas>
+		<div style="display:none;">
+		<img id="source" src="sourceProf/0.png"
+			width="300" height="227">
+		</div>
+
+		<script>
+
+			var canvas = document.getElementById("canvas");
+			var ctx = canvas.getContext("2d");
+			var image = document.getElementById("source");
+			ctx.drawImage(image, 0, 0);
+
+
+			function download_img(el) {
+			var canvas = document.getElementById("webgl-canvas");
+			 var ctx = canvas.getContext("3d");
+			// var ox = canvas.width / 2;
+			// var oy = canvas.height / 2;
+			// ctx.font = "42px serif";
+			// ctx.textAlign = "center";
+			// ctx.textBaseline = "middle";
+			// ctx.fillStyle = "#800";
+			// ctx.fillRect(ox / 2, oy / 2, ox, oy);
+
+			// get image URI from canvas object
+			var imageURI = canvas.toDataURL('image/png');
+			el.href = imageURI;
+			};
+		</script>
+
+		<a id="download" download="myImage.png" href="" onclick="download_img(this);">Download</a>
 	</body>
 </html>
