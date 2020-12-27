@@ -117,8 +117,7 @@
 			var currentLightIntensity = 10.0;
 			var objectInRotation = 1;
 			var quadAngle = 45;
-			var brokenGlassIntensity=10.0;
-			var dirtGlassIntensity=10.0;
+			var brokenGlassIntensity=33.0;
 			function initShaderParameters(prg){
 				prg.vertexNormalAttribute   = glContext.getAttribLocation(prg, "aVertexNormal");
 				glContext.enableVertexAttribArray(prg.vertexNormalAttribute);
@@ -264,7 +263,7 @@
 				document.getElementById("spanID2").innerHTML = "<button id='normalMapButton' onclick='changeNormalMap()'>normal map [" + currentNormalMapID + "]</button>";
 			}
 			function sliderRotLightRadiusChanged(){
-				lightRotRadius = document.getElementById("rotLightRadiusSlider").value/10.0;
+				lightRotRadius = document.getElementById("rotLightRadiusSlider").value;
             }
             function sliderHorizon(){
 				hAngle = document.getElementById("sliderHorizon").value;
@@ -277,6 +276,9 @@
 			}
 			function sliderBrokenIntensityChanged(){
 				brokenGlassIntensity = document.getElementById("brokenGlassIntensity").value;
+				document.getElementById("spanBrok").innerHTML = "<span id=\"spanBrok\"><label> Broken Intensity : "+brokenGlassIntensity+" %</label></span>";
+				
+
 			}
 
 			function sliderLightIntensityChanged(){
@@ -306,11 +308,14 @@
 			<input id="userBrokenGlassCheckBox" type="checkbox" checked=true disabled=true onchange="changeTheMapUse( 'userBrokenGlassCheckBox', 'normalMapButton' )">BrokenGlass</input>
 			<br />
 			<span id="spanID1"><button id="colorMapButton" onclick="changeColorMap()">Texture [1]</button></span>
-			<input type="range" id="brokenGlassIntensity" value="50" min="1" max="100" oninput="sliderBrokenIntensityChanged();">
+
+			<input type="range" id="brokenGlassIntensity" value="33" min="0" step="33" max="99" oninput="sliderBrokenIntensityChanged();">
+			<span id="spanBrok"><label> Broken Intensity : 33 %</label></span>
 
 		</p>
-		<input id="animateCheckBox" type="checkbox" checked=true onchange="animateObject()">Rotation de la source de lumière</input> de rayon : 0.1<input type="range" id="rotLightRadiusSlider" value="20" min="1" max="200" oninput="sliderRotLightRadiusChanged();">20.0<br />
-		Intensité de la lumière : 1.0<input type="range" id="lightIntensitySlider" value="50" min="1" max="100" oninput="sliderLightIntensityChanged();">100.0<br />
+		<input id="animateCheckBox" type="checkbox" checked=true onchange="animateObject()">Rotation de la source de lumière</input> de rayon : 1.0
+		<input type="range" id="rotLightRadiusSlider" value="3" min="1" max="7" step="2" oninput="sliderRotLightRadiusChanged();">7.0<br />
+		Intensité de la lumière : 13.0<input type="range" id="lightIntensitySlider" value="13" step="7" min="13" max="27" oninput="sliderLightIntensityChanged();">27.0<br />
         
         Inclinaison du plan Horizontale : -30°<input type="range" id="sliderHorizon" value="0"  step="15" min="-30" max="30" oninput="sliderHorizon();">30°
 			<span id="spanH"><label> value : 0</label></span>
