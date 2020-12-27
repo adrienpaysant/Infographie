@@ -105,7 +105,7 @@
 			var tangentsBuffer = null;
 			var texColorTab = new Array();
 			var texNormalTab = new Array();
-			var texSpecTab  = new Array();
+			var texBrokenTab  = new Array();
 			var indices    = [];
 			var vertices   = [];
 			var textCoords = [];
@@ -117,6 +117,8 @@
 			var currentLightIntensity = 10.0;
 			var objectInRotation = 1;
 			var quadAngle = 45;
+			var brokenGlassIntensity=10.0;
+			var dirtGlassIntensity=10.0;
 			function initShaderParameters(prg){
 				prg.vertexNormalAttribute   = glContext.getAttribLocation(prg, "aVertexNormal");
 				glContext.enableVertexAttribArray(prg.vertexNormalAttribute);
@@ -148,15 +150,15 @@
 							  6.0, -6.0, 0.0,
 							 -6.0,  6.0, 0.0,
 							  6.0,  6.0, 0.0 ];
-				normals = [ 0.0, 0.0, 1,
-							0.0, 0.0, 1,
-							0.0, 0.0, 1,
-							0.0, 0.0, 1 ];
+				normals = [ 0, 0, 1,
+							0, 0, 1,
+							0, 0, 1,
+							0, 0, 1];
 				indices = [ 0, 1, 2, 3 ];
-				textCoords = [  -3.0, -3.0,
-								4.0, -3.0,
-								-3.0, 4.0,
-								4.0, 4.0 ];
+				textCoords = [  -2.75, -2.75,
+								3.75, -2.75,
+								-2.75, 3.75,
+								3.75, 3.75 ];
 				tangents = [ 1.0, 0.0, 0.0,
 							 1.0, 0.0, 0.0,
 							 1.0, 0.0, 0.0,
@@ -168,30 +170,10 @@
 				tangentsBuffer = getArrayBufferWithArray(tangents);
 			}
 			function initMaterialProperties(){
-				switch( currentColorMapID ) {
-					case 1: glContext.uniform3f(prg.ambUniform, 0.5, 0.5, 0.5); break;
-					case 2: glContext.uniform3f(prg.ambUniform, 0.9, 0.5, 0.5); break;
-					case 3: glContext.uniform3f(prg.ambUniform, 0.5, 0.5, 0.5); break;
-					case 4: glContext.uniform3f(prg.ambUniform, 0.5, 0.5, 0.5); break;
-					case 5: glContext.uniform3f(prg.ambUniform, 0.3, 0.3, 0.3); break;
-					case 6: glContext.uniform3f(prg.ambUniform, 0.3, 0.3, 0.3); break;
-					case 7: glContext.uniform3f(prg.ambUniform, 0.3, 0.3, 0.3); break;
-					case 8: glContext.uniform3f(prg.ambUniform, 0.3, 0.3, 0.3); break;
-					case 9: glContext.uniform3f(prg.ambUniform, 0.3, 0.3, 0.3); break;
-					case 10: glContext.uniform3f(prg.ambUniform, 0.3, 0.3, 0.3); break;
-				}
-				switch( currentNormalMapID ) {
-					case 1: glContext.uniform3f(prg.difUniform, 0.4, 0.4, 0.4); break;
-					case 2: glContext.uniform3f(prg.difUniform, 0.4, 0.4, 0.4); break;
-					case 3: glContext.uniform3f(prg.difUniform, 0.4, 0.4, 0.4); break;
-					case 4: glContext.uniform3f(prg.difUniform, 0.2, 0.2, 0.3); break;
-					case 5: glContext.uniform3f(prg.difUniform, 0.6, 0.7, 0.6); break;
-					case 6: glContext.uniform3f(prg.difUniform, 0.6, 0.7, 0.6); break;
-					case 7: glContext.uniform3f(prg.difUniform, 0.6, 0.7, 0.6); break;
-					case 8: glContext.uniform3f(prg.difUniform, 0.6, 0.7, 0.6); break;
-					case 9: glContext.uniform3f(prg.difUniform, 0.6, 0.7, 0.6); break;
-					case 10: glContext.uniform3f(prg.difUniform, 0.6, 0.7, 0.6); break;
-				}
+				glContext.uniform3f(prg.ambUniform, 0.5, 0.5, 0.5); 
+				let intens =brokenGlassIntensity/100;
+				
+				glContext.uniform3f(prg.difUniform, intens, intens, intens); 
 				switch( currentSpecularMapID ) {
 					case 1: {
 							glContext.uniform3f(prg.specUniform, 0.2, 0.2, 0.2);
@@ -267,27 +249,31 @@
 			    glContext.uniformMatrix4fv(prg.nMatrixUniform, false, nMatrix);
 				initMaterialProperties();
 				glContext.uniform1i(prg.usingColorMapUniform, document.getElementById( "useColorMapCheckBox" ).checked);
-				glContext.uniform1i(prg.usingNormalMapUniform, document.getElementById( "useNormalMapCheckBox" ).checked);
-				glContext.uniform1i(prg.usingSpecularMapUniform, document.getElementById( "useSpecularMapCheckBox" ).checked);
+				glContext.uniform1i(prg.usingColorMapUniform, document.getElementById( "userBrokenGlassCheckBox" ).checked);
+				glContext.uniform1i(prg.usingNormalMapUniform, document.getElementById( "useDirtGlassCheckBox" ).checked);
+				
 				glContext.bindBuffer(glContext.ARRAY_BUFFER, normalBuffer);
 				glContext.vertexAttribPointer(prg.vertexNormalAttribute, 3, glContext.FLOAT, false, 0, 0);
+
 				glContext.bindBuffer(glContext.ARRAY_BUFFER, vertexBuffer);
 				glContext.vertexAttribPointer(prg.vertexPositionAttribute, 3, glContext.FLOAT, false, 0, 0);
 				glContext.bindBuffer(glContext.ARRAY_BUFFER, textCoordsBuffer);
 				glContext.vertexAttribPointer(prg.textureCoordsAttribute, 2, glContext.FLOAT, false, 0, 0);
 				glContext.bindBuffer(glContext.ARRAY_BUFFER, tangentsBuffer);
 				glContext.vertexAttribPointer(prg.tangentsAttribute, 3, glContext.FLOAT, false, 0, 0);
+				
 				glContext.activeTexture(glContext.TEXTURE0);
 				glContext.bindTexture(glContext.TEXTURE_2D, texColorTab[currentColorMapID]);
 				glContext.uniform1i(prg.uColorTexture, 0);
 
-				glContext.activeTexture(glContext.TEXTURE2);
-				glContext.bindTexture(glContext.TEXTURE_2D, texSpecTab[currentColorMapID]);//TODO changer nom de spec pour dirtcolor
-				glContext.uniform1i(prg.uColorTexture, 0);
-
 				glContext.activeTexture(glContext.TEXTURE1);
+				glContext.bindTexture(glContext.TEXTURE_2D, texBrokenTab[0]);
+				glContext.uniform1i(prg.uNormalMap, 0);
+
+				glContext.activeTexture(glContext.TEXTURE2);
 				glContext.bindTexture(glContext.TEXTURE_2D, texNormalTab[currentNormalMapID-1]);
 				glContext.uniform1i(prg.uNormalMap, 1);
+
 				glContext.bindBuffer(glContext.ELEMENT_ARRAY_BUFFER, indexBuffer);
 				glContext.drawElements(glContext.TRIANGLE_STRIP, indices.length, glContext.UNSIGNED_SHORT,0);
 			}
@@ -300,6 +286,8 @@
 					var fileName = "7digits/";
 					initTextureWithImage(fileName+index+".png", texColorTab);
 				}
+				initTextureWithImage("glass.jpg", texBrokenTab);
+
 				renderLoop();
 			}
 		</script>
@@ -314,16 +302,6 @@
 				else currentNormalMapID = 1;
 				document.getElementById("spanID2").innerHTML = "<button id='normalMapButton' onclick='changeNormalMap()'>normal map [" + currentNormalMapID + "]</button>";
 			}
-			function changeSpecularMap(){
-				if( currentSpecularMapID < maxSample ) ++currentSpecularMapID;
-				else currentSpecularMapID = 1;
-				document.getElementById("spanID3").innerHTML = "<button id='specularMapButton' onclick='changeSpecularMap()'>specular map [" + currentSpecularMapID + "]</button>";
-			}
-			function changeTheMapUse( checkboxID, buttonID ){
-				console.log( checkboxID +" - "+ buttonID);
-				if( document.getElementById( checkboxID ).checked ) document.getElementById( buttonID ).disabled = false;
-				else document.getElementById( buttonID ).disabled = true;
-			}
 			function sliderRotLightRadiusChanged(){
 				lightRotRadius = document.getElementById("rotLightRadiusSlider").value/10.0;
             }
@@ -335,6 +313,9 @@
 			function sliderVertical(){
 				vAngle = document.getElementById("sliderVertical").value;
 				document.getElementById("spanV").innerHTML = "<span id=\"spanV\"><label> value : "+vAngle+" </label></span>";
+			}
+			function sliderBrokenIntensityChanged(){
+				brokenGlassIntensity = document.getElementById("brokenGlassIntensity").value;
 			}
 
 			function sliderLightIntensityChanged(){
@@ -361,10 +342,13 @@
 		<h2>Manipulations  </h2><br>
         <p>
 			<input id="useColorMapCheckBox" type="checkbox" checked=true onchange="changeTheMapUse( 'useColorMapCheckBox', 'colorMapButton' )">Texture</input>
-			<input id="useNormalMapCheckBox" type="checkbox" checked=true onchange="changeTheMapUse( 'useNormalMapCheckBox', 'normalMapButton' )">NormalMap</input>
-			<input id="useSpecularMapCheckBox" type="checkbox" checked=true oninput=="changeTheMapUse( 'useSpecularMapCheckBox', 'specularMapButton' )">SpecularMap</input>
+			<input id="userBrokenGlassCheckBox" type="checkbox" checked=true disabled=true onchange="changeTheMapUse( 'userBrokenGlassCheckBox', 'normalMapButton' )">BrokenGlass</input>
+			<input id="useDirtGlassCheckBox" type="checkbox" checked=true disabled=true oninput=="changeTheMapUse( 'useDirtGlassCheckBox', 'specularMapButton' )">DirtGlass</input>
 			<br />
 			<span id="spanID1"><button id="colorMapButton" onclick="changeColorMap()">Texture [1]</button></span>
+			<input type="range" id="brokenGlassIntensity" value="50" min="1" max="100" oninput="sliderBrokenIntensityChanged();">
+			<input type="range" id="dirtGlassIntensity" value="50" min="1" max="100" oninput="">
+
 		</p>
 		<input id="animateCheckBox" type="checkbox" checked=true onchange="animateObject()">Rotation de la source de lumière</input> de rayon : 0.1<input type="range" id="rotLightRadiusSlider" value="20" min="1" max="200" oninput="sliderRotLightRadiusChanged();">20.0<br />
 		Intensité de la lumière : 1.0<input type="range" id="lightIntensitySlider" value="50" min="1" max="100" oninput="sliderLightIntensityChanged();">100.0<br />
