@@ -41,16 +41,7 @@ h2 {
 	text-transform: uppercase;
 	color: #3E6392;
 }
-/*
-h2:before { 
-	content: ""; 
-	position:absolute; 
-	top: 50%; 
-	left: 0; 
-	width: 100%; 
-	border-bottom: 4px solid #3E6392; 
-}
-*/
+
 h2 span { 
 	position:relative; 
 	display: inline-block; 
@@ -107,8 +98,6 @@ canvas {
 	margin-top: -15px;
 }
 
-
-
 a {
 	outline: none;
 	text-decoration: none;
@@ -119,6 +108,7 @@ a {
 	line-height: 3;
 	color: grey;
   }
+
   a:hover {     
 	background:#1260a1;
 	color:white;

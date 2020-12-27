@@ -101,10 +101,10 @@
 			var vertexBuffer = null;
 			var indexBuffer  = null;
 			var textCoordsBuffer = null;
-			var tangentsBuffer = null;
-			var texColorTab = new Array();
+			var tangentsBuffer 	 = null;
+			var texColorTab  = new Array();
 			var texNormalTab = new Array();
-			var texBrokenTab  = new Array();
+			var texBrokenTab = new Array();
 			var indices    = [];
 			var vertices   = [];
 			var textCoords = [];
@@ -124,7 +124,7 @@
 				glContext.enableVertexAttribArray(prg.vertexPositionAttribute);
 				prg.textureCoordsAttribute  = glContext.getAttribLocation(prg, "aTextureCoord");
 				glContext.enableVertexAttribArray(prg.textureCoordsAttribute);
-				prg.tangentsAttribute  = glContext.getAttribLocation(prg, "aTangent");
+				prg.tangentsAttribute  		= glContext.getAttribLocation(prg, "aTangent");
 				glContext.enableVertexAttribArray(prg.tangentsAttribute);
 				prg.pMatrixUniform          = glContext.getUniformLocation(prg, 'uPMatrix');
 				prg.mvMatrixUniform         = glContext.getUniformLocation(prg, 'uMVMatrix');
@@ -132,14 +132,14 @@
 			    prg.lightPositionUniform    = glContext.getUniformLocation(prg, 'uLightPosition');
 			    prg.shininessUniform        = glContext.getUniformLocation(prg, 'uShininess');
 			    prg.lightIntensityUniform   = glContext.getUniformLocation(prg, 'lightIntensity');
-			    prg.ambUniform     = glContext.getUniformLocation(prg, 'uLightAmbient');
-			    prg.difUniform  = glContext.getUniformLocation(prg, 'uMaterialDiffuse');
-			    prg.specUniform = glContext.getUniformLocation(prg, 'uMaterialSpecular');
+			    prg.ambUniform     			= glContext.getUniformLocation(prg, 'uLightAmbient');
+			    prg.difUniform  			= glContext.getUniformLocation(prg, 'uMaterialDiffuse');
+			    prg.specUniform 			= glContext.getUniformLocation(prg, 'uMaterialSpecular');
 				prg.usingColorMapUniform    = glContext.getUniformLocation(prg, 'usingColorMap');
 				prg.usingNormalMapUniform   = glContext.getUniformLocation(prg, 'usingNormalMap');
 				prg.usingSpecularMapUniform = glContext.getUniformLocation(prg, 'usingSpecularMap');
 				prg.uColorTexture 			= glContext.getUniformLocation(prg, "uColorTexture");
-				prg.uColorDirt 			= glContext.getUniformLocation(prg, "uColorDirt");
+				prg.uColorDirt 				= glContext.getUniformLocation(prg, "uColorDirt");
 				prg.uNormalMap   			= glContext.getUniformLocation(prg, "uNormalMap");
 				prg.uSpecularMap   			= glContext.getUniformLocation(prg, "uSpecularMap");
 			}
@@ -165,7 +165,7 @@
 				vertexBuffer     = getArrayBufferWithArray(vertices);
 				indexBuffer      = getIndexBufferWithIndices(indices);
 				textCoordsBuffer = getArrayBufferWithArray(textCoords);
-				tangentsBuffer = getArrayBufferWithArray(tangents);
+				tangentsBuffer	 = getArrayBufferWithArray(tangents);
 			}
 			function initMaterialProperties(){
 				glContext.uniform3f(prg.ambUniform, 0.5, 0.5, 0.5); 
@@ -177,10 +177,8 @@
 				glContext.uniform1f(prg.shininessUniform, 1.0);
 					
 			}
-			function setLightPositionAndIntensity()
-			{
-				if( document.getElementById("animateCheckBox").checked )
-				{
+			function setLightPositionAndIntensity(){
+				if( document.getElementById("animateCheckBox").checked ){
 					rotLight += 0.03;
 					if( rotLight>M_2PI) rotLight = -M_2PI;
 				}
