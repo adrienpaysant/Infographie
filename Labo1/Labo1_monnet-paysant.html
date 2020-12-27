@@ -292,7 +292,7 @@
 	<body onload="initWebGL()">
         <script>displayTitle("Infographie - Labo 1 - MONNET PAYSANT - Génération images Discovery", 1,1,1,1,1,1,1);</script>
 		<nav>
-		<a href="#webgl-canvas">Aller directement aux manipulations.</a></nav>
+		<a href="#manip">Aller directement aux manipulations.</a></nav>
 		<h2>Choix du sujet </h2>
         <p>
 			Le but de ce labo 1 en WebGl est de permettre la génération de données en vue d'entrainer Tesseract qui est un outils de
@@ -314,15 +314,51 @@
 			<li>Mettre en place la manipulation de la texture verticalement et horizontalement</li>
 			<li>Mettre en place l'illumination de Phong pour simuler des reflets</li>
 			<li>Mettre en place une texture simulant la détérioration de l'écran</li>
-			<li>Dimenssioner les variations des paramètres pour être pertinent</li>
+			<li>Dimensioner les variations des paramètres pour être pertinent</li>
 			<li>Mettre en place la sauvegarde du canevas webgl en image</li>
 			<li>Mettre en place une routine pour sauvegarder un jeu d'images</li>
         </ul>
 		<hr>
 		<h2>Explications de la démarche  </h2>
-        <p>je suis la démarche</p>
+        <p>
+			La base de ce laboratoire est l'exemple 8 du chapitre 8, qui présente une implémentation 
+			de l'illumination de Phong ainsi que l'usage de colorMap/normalMap/specularMap. <br>
+			
+			Il faut alors adapater le code pour nos fichiers sources.
+			On va également retirer les effets de normal map et specular map pour utiliser une texture de normal map unique.
+			<br> Cette texture sera celle de verre dégradé. Il faut alors implémenter une variation de l'intensité de cette texture.
+			<br> La mise en place du téléchargement de l'image est réalisée en utilisant un lien.
+			<br> Il en est proposé deux implémentation, la première permet de récupérer l'image que l'on manipule dans le canevas.
+			<br> La seconde est utilisé lors de l'automatisation du traitement.
+			<br>
+			<br> Pour le choix des paramètres, on aura  : 
+			<ul>
+				<li>3 variations pour l'intensité de la texture de verre cassé (0%,50%,100%)</li>
+				<li>3 variations pour la rotation de la source de lumière</li>
+				<li>3 variations pour l'intensité de la lumière</li>
+				<li>3 variations pour l'axe vertical (-15°,0°,15°)</li>
+				<li>3 variations pour l'axe horizontal (-15°,0°,15°)</li>
+			</ul>
+			<br>Soit un total de 3*3*3*3*3=243 images par fichier source.
+			<br> Ces valeurs ont été choisi car elles permettent de conserver une lisibilité décente sur les images.
+			<br> A titre d'exemple, une intensité de la lumière de 100% ne permet pas de lire l'image.
+
+			<br><br>Pour mettre en place la routine de sauvegarde, on choisit de proposer l'opération pour un fichier source à la fois.
+			<br> Ainsi il faut sélectionner un fichier (ou celui actuellement affiché sera utilisé).
+			<br>Ensuite on itérer sur tout les paramètres cités plus haut afin de capturer une image dans chaque conditions.
+
+			<br><h3>Problème d'itératon avec Google Chrome</h3>
+			<p>
+				Avec Google Chrome, l'automatisation n'est pas fonctionnelle à 100% car elle "oublie" des images.
+				<br>
+				Le warning affiché dans la console est le suivant : 
+				<img src="warn.png" alt="image warning">
+
+				<br> La solution immédiate pour pallier à ce problème est d'utiliser FireFox, navigateur sur lequel la manipulation fonctionne à 100%.
+			</p>
+		</p>
 		<hr>
-		<h2>Manipulations  </h2><br>
+		<h2 id="manip">Manipulations  </h2><br>
         <p>
 			<input id="useColorMapCheckBox" type="checkbox" hidden checked=true onchange="changeTheMapUse( 'useColorMapCheckBox', 'colorMapButton' )">Texture</input>
 			<input id="userBrokenGlassCheckBox" type="checkbox" hidden checked=true disabled=true onchange="changeTheMapUse( 'userBrokenGlassCheckBox', 'normalMapButton' )">BrokenGlass</input>
@@ -421,5 +457,13 @@
 			el.href = imageURI;
 			};
 		</script>
+
+		<hr>
+		<h2>Sources</h2>
+		<p>je suis la source</p>
 	</body>
+	<footer style="text-align: center;">
+		<br>
+		Réalisé par Joris Monnet et Adrien Paysant dans le cadre du cours d'Infographie au sein de la He-Arc Neuchâtel filière informatique orientation DLM 3ème année
+	</footer>
 </html>
