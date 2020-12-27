@@ -63,8 +63,7 @@
 				vec3 normalVector = vNormal;
 				vec3 specVector ;
 				vec3 finalColor = uLightAmbient;
-				if( usingColorMap ) baseColor = vec3(texture2D(uColorTexture, mapCoord))/*+vec3(texture2D(uColorDirt, mapCoord))*/;//TODO
-				//todo moduler par un pourcentage
+				if( usingColorMap ) baseColor = vec3(texture2D(uColorTexture, mapCoord));
 				else baseColor = vec3(0.5, 0.5, 0.5);
 				if( usingNormalMap ){
 					normalVector = normalize(vec3(2.0*texture2D(uNormalMap, mapCoord).rgb - 1.0));
