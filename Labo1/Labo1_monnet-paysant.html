@@ -254,6 +254,8 @@
 				if( currentColorMapID < maxSample ) ++currentColorMapID;
 				else currentColorMapID = 0;
 				document.getElementById("spanID1").innerHTML = "<button id='colorMapButton' onclick='changeColorMap()'>Texture [" + currentColorMapID + "]</button>";
+				document.getElementById("spanIndiceImage").innerHTML = "<span id=\"spanIndiceImage\"><label>"+currentColorMapID+"</label></span>";
+				document.getElementById("idImage").value = currentColorMapID;
 			}
 			function changeNormalMap(){
 				if( currentNormalMapID < maxSample ) ++currentNormalMapID;
@@ -284,6 +286,7 @@
 			function sliderImgIndice(){
 				currentColorMapID = document.getElementById("idImage").value;
 				document.getElementById("spanIndiceImage").innerHTML = "<span id=\"spanIndiceImage\"><label>"+currentColorMapID+"</label></span>";
+				document.getElementById("spanID1").innerHTML = "<button id='colorMapButton' onclick='changeColorMap()'>Texture [" + currentColorMapID + "]</button>";
 			}
 		</script>
 	</head>
