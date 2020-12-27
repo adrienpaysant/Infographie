@@ -339,25 +339,15 @@
 			function start_process(){
 				let indexTosave=0;
 				//parcours texture vers
-				for(let _brokenGlassIntensity=0;_brokenGlassIntensity<=100;_brokenGlassIntensity+=50){
+				for(brokenGlassIntensity=0;brokenGlassIntensity<=100;brokenGlassIntensity+=50){
 					//parcours rot raduis
-					brokenGlassIntensity=_brokenGlassIntensity;
-					drawScene();
-					for(let _lightRotRadius=1;_lightRotRadius<=5;_lightRotRadius+=2){
+					for(lightRotRadius=1;lightRotRadius<=5;lightRotRadius+=2){
 						//parcrous intensité lumière
-						lightRotRadius=_lightRotRadius;
-						drawScene();
-						for(let _currentLightIntensity=13;_currentLightIntensity<=27;_currentLightIntensity+=7){
+						for(currentLightIntensity=13;currentLightIntensity<=27;currentLightIntensity+=7){
 							//parcours vertical
-							currentLightIntensity=_currentLightIntensity;
-							drawScene();
-							for(let _vAngle=-15;_vAngle<=15;_vAngle+=15){
+							for(vAngle=-15;vAngle<=15;vAngle+=15){
 								//parcours horizontal
-								vAngle=_vAngle;
-								drawScene();
-								for(let _hAngle=-15;_hAngle<=15;_hAngle+=15){
-									hAngle=_hAngle;
-									drawScene();
+								for(hAngle=-15;hAngle<=15;hAngle+=15){
 									saveImage("webgl-canvas",currentColorMapID+"_"+(indexTosave++)+".png");
 									drawScene();
 								}
