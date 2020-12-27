@@ -289,19 +289,19 @@
 			}
 		</script>
 	</head>
-	<body onload="initWebGL()" style="padding: 3em; text-align: center;">
+	<body onload="initWebGL()" style="padding: 3em; text-align: justify;">
         <script>displayTitle("Infographie - Labo 1 - MONNET PAYSANT - Génération images Discovery", 1,1,1,1,1,1,1);</script>
 		<nav>
 		<a href="#manip">Aller directement aux manipulations.</a></nav>
 		<h2>Choix du sujet </h2>
         <p>
-			Le but de ce labo 1 en WebGl est de permettre la génération de données en vue d'entrainer Tesseract qui est un outils de
-			reconnaissance optique de caractère. <br> En effet l'un des membres du groupe de ce labo utilise Tesseract dans le cadre de son projet P3.
+			Le but de ce labo 1 en WebGl est de permettre la génération de données en vue d'entrainer Tesseract qui est un outil de
+			reconnaissance optique de caractères. <br> En effet l'un des membres du groupe de ce labo utilise Tesseract dans le cadre de son projet P3.
 			<br>
-		La création de données en grand nombre pourrait permettre de faciliter l'entrainement de cet outils ou à tout moins permettre de fournir
+		La création de données en grand nombre pourrait permettre de faciliter l'entrainement de cet outil ou à tout le moins permettre de fournir
 			une base de données consistante.
 			<br>
-			Le sujet du P3 (P3-Discovery) est la reconnaissance de caractère depuis un multimètre via une webcam.
+			Le sujet du P3 (P3-Discovery) est la reconnaissance de caractères depuis un multimètre via une webcam.
 			<br>Le but d'entrainer Tesseract est de rendre plus résistante cette reconnaissance. <br> En entrainant via une
 			diversité d'éclairage et en simulant des détériorations de l'écran du multimètre, nous pouvons faire gagner de la robustesse à Tesseract <br>
 			face à différentes conditions matérielles. 
@@ -314,7 +314,7 @@
 			<li>Mettre en place la manipulation de la texture verticalement et horizontalement</li>
 			<li>Mettre en place l'illumination de Phong pour simuler des reflets</li>
 			<li>Mettre en place une texture simulant la détérioration de l'écran</li>
-			<li>Dimensioner les variations des paramètres pour être pertinent</li>
+			<li>Dimensionner les variations des paramètres pour être pertinent</li>
 			<li>Mettre en place la sauvegarde du canvas webgl en image</li>
 			<li>Mettre en place une routine pour sauvegarder un jeu d'images</li>
         </ul>
@@ -324,51 +324,53 @@
 			La base de ce laboratoire est l'exemple 8 du chapitre 8, qui présente une implémentation 
 			de l'illumination de Phong ainsi que l'usage de colorMap/normalMap/specularMap. <br>
 			
-			Il faut alors adapater le code pour nos fichiers sources.
-			On va également retirer les effets de normal map et specular map pour utiliser une texture de normal map unique.
+			Il faut alors adapter le code pour nos fichiers sources.
+			On va également retirer les effets de colorMap/normalMap/specularMap pour utiliser une texture de normal map unique et une color map faisant défiler nos données sources.
 			<br> Cette texture sera celle de verre dégradé. Il faut alors implémenter une variation de l'intensité de cette texture.
 			<br> La mise en place du téléchargement de l'image est réalisée en utilisant un lien.
-			<br> Il en est proposé deux implémentation, la première permet de récupérer l'image que l'on manipule dans le canvas.
-			<br> La seconde est utilisé lors de l'automatisation du traitement.
+			<br> Il en est proposé deux implémentations, la première permet de récupérer l'image que l'on manipule dans le canvas.
+			<br> La seconde est utilisée lors de l'automatisation du traitement.
 			<br>
 			<br> Pour le choix des paramètres, on aura  : 
 			<ul>
-				<li>3 variations pour l'intensité de la texture de verre cassé (0%,50%,100%)</li>
-				<li>3 variations pour la rotation de la source de lumière</li>
-				<li>3 variations pour l'intensité de la lumière</li>
-				<li>3 variations pour l'axe vertical (-15°,0°,15°)</li>
-				<li>3 variations pour l'axe horizontal (-15°,0°,15°)</li>
+				<li>3 variations pour l'intensité de la texture de verre cassé (0%,50%,100%),</li>
+				<li>3 variations pour la rotation de la source de lumière,</li>
+				<li>3 variations pour l'intensité de la lumière,</li>
+				<li>3 variations pour l'axe vertical (-15°,0°,15°),</li>
+				<li>3 variations pour l'axe horizontal (-15°,0°,15°).</li>
 			</ul>
 			<br>Soit un total de 3*3*3*3*3=243 images par fichier source.
-			<br> Ces valeurs ont été choisi car elles permettent de conserver une lisibilité décente sur les images.
+			<br> Ces valeurs ont été choisies car elles permettent de conserver une lisibilité décente sur les images.
 			<br> A titre d'exemple, une intensité de la lumière de 100% ne permet pas de lire l'image.
 
 			<br><br>Pour mettre en place la routine de sauvegarde, on choisit de proposer l'opération pour un fichier source à la fois.
-			<br> Ainsi il faut sélectionner un fichier (ou celui actuellement affiché sera utilisé).
-			<br>Ensuite on itérer sur tout les paramètres cités plus haut afin de capturer une image dans chaque conditions.
+			<br> Ainsi il faut sélectionner un fichier ; à défaut celui actuellement affiché sera utilisé.
+			<br>Ensuite on itère sur tous les paramètres cités plus haut afin de capturer une image dans chaque condition.
 
-			<br><h3>Problème d'itératon avec Google Chrome</h3>
+			<br><h3>Problème d'itération avec Google Chrome</h3>
 			<p>
 				Avec Google Chrome, l'automatisation n'est pas fonctionnelle à 100% car elle "oublie" des images.
 				<br>
 				Le warning affiché dans la console est le suivant : 
 				<img src="warn.png" alt="image warning">
 
-				<br> La solution immédiate pour pallier à ce problème est d'utiliser FireFox, navigateur sur lequel la manipulation fonctionne à 100%.
+				<br> La solution immédiate pour pallier ce problème est d'utiliser FireFox, navigateur sur lequel la manipulation fonctionne à 100%.
 			</p>
-			<br><h3>Problème de l'image vide</h3>
+			<h3>Problème de l'image vide</h3>
 			<p>
-				Lors de la sauvegarde du canvas, dans un premier temps les images enregistrées étaient vide.
+				Lors de la sauvegarde du canvas, dans un premier temps les images enregistrées étaient vides.
 				<br>La cause du problème est que le canvas se "nettoyait" avant que l'image soit capturée.
-				<br>Pour palier à ce problème il faut ajouter <code>gl = canvas.getContext(names[i], {preserveDrawingBuffer: true});</code> l'attribut preserveDrawingBuffer à vrai lors de la création du context web gl du canvas.
+				<br>Pour pallier ce problème il faut ajouter  l'attribut preserveDrawingBuffer à vrai lors de la création du context web gl du canvas comme suit : <br>
+				<code>gl = canvas.getContext(names[i], {preserveDrawingBuffer: true});</code>
 
 			</p>
 		</p>
 		<hr>
 		<h2 id="manip">Manipulations  </h2><br>
+		<div style="text-align: center;">
         <p>
-			<input id="useColorMapCheckBox" type="checkbox" hidden checked=true onchange="changeTheMapUse( 'useColorMapCheckBox', 'colorMapButton' )">Texture</input>
-			<input id="userBrokenGlassCheckBox" type="checkbox" hidden checked=true disabled=true onchange="changeTheMapUse( 'userBrokenGlassCheckBox', 'normalMapButton' )">BrokenGlass</input>
+			<input id="useColorMapCheckBox" type="checkbox" hidden checked=true onchange="changeTheMapUse( 'useColorMapCheckBox', 'colorMapButton' )"></input>
+			<input id="userBrokenGlassCheckBox" type="checkbox" hidden checked=true disabled=true onchange="changeTheMapUse( 'userBrokenGlassCheckBox', 'normalMapButton' )"></input>
 			<br />
 			<span id="spanID1"><button id="colorMapButton" onclick="changeColorMap()">Texture [1]</button></span>
 
@@ -380,7 +382,7 @@
 		<input type="range" id="rotLightRadiusSlider" value="3" min="1" max="5" step="2" oninput="sliderRotLightRadiusChanged();">5.0<br />
 		Intensité de la lumière : 13.0<input type="range" id="lightIntensitySlider" value="13" step="7" min="13" max="27" oninput="sliderLightIntensityChanged();">27.0<br />
         
-        Inclinaison du plan Verticale : -15°<input type="range" id="sliderHorizon" value="0"  step="15" min="-15" max="15" oninput="sliderHorizon();">15°
+        Inclinaison du plan Vertical : -15°<input type="range" id="sliderHorizon" value="0"  step="15" min="-15" max="15" oninput="sliderHorizon();">15°
 			<span id="spanH"><label> value : 0</label></span>
 			<br>
 			Inclinaison du plan Horizontal : -15°<input type="range" id="sliderVertical" step="15" value="0" min="-15" max="15" oninput="sliderVertical();">15°
@@ -391,13 +393,13 @@
 			HTML5 is not supported
 		</canvas><br>
 		<a id="download" download="myImage.png" href="" onclick="download_img(this);">Download</a>
-		<hr>
+		<br>
 		<h3>Automatisation</h3>
 		Note : les images s'enregistrent dans le dossier téléchargement.
 		<br>
 		Choisissez indice image : <input type="range" id="idImage" value="1" min="0" max="11" step="1" oninput="sliderImgIndice();"><span id="spanIndiceImage"><label> 1</label></span><br>
 		<input type="button" name="btnStart" id="btnStart" onclick="start_process();" value="C'est Parti !">
-
+		</div>
 		<script>
 			function start_process(){
 				let indexTosave=0;
@@ -468,10 +470,10 @@
 		<hr>
 		<h2>Sources</h2>
 		<ul style="display: flex; text-align: center;">
-			<a href="https://nosmoking.developpez.com/demos/js/canvas-download.html" target="_blank">implémentation de la sauvegarde du canvas</a>
+			<a href="https://nosmoking.developpez.com/demos/js/canvas-download.html" target="_blank">Implémentation de la sauvegarde du canvas</a>
 			<a href="http://webgl3d.info/" target="_blank">WegGL par la pratique, Stéphane Gobron, Mario Gutiérrez, Presses polytechniques et universitaires romandes. 2015</a>
 			<a href="https://webgl2fundamentals.org/webgl/lessons/webgl-tips.html" target="_blank">Résolution problème image vide</a>
-			<a href="https://opengameart.org/content/broken-glass-batch-of-7-seamless-textures-with-normalmaps-wirereinforcedcracknjpg" target="_blank">Texture de verre abimé</a>
+			<a href="https://opengameart.org/content/broken-glass-batch-of-7-seamless-textures-with-normalmaps-wirereinforcedcracknjpg" target="_blank">Texture de verre degradé</a>
 		</ul>
 	</body>
 	<footer style="text-align: center;">
