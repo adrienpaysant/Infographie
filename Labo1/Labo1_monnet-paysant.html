@@ -117,7 +117,7 @@
 			var currentLightIntensity = 10.0;
 			var objectInRotation = 1;
 			var quadAngle = 45;
-			var brokenGlassIntensity=33.0;
+			var brokenGlassIntensity=50.0;
 			function initShaderParameters(prg){
 				prg.vertexNormalAttribute   = glContext.getAttribLocation(prg, "aVertexNormal");
 				glContext.enableVertexAttribArray(prg.vertexNormalAttribute);
@@ -154,10 +154,10 @@
 							0, 0, 1,
 							0, 0, 1];
 				indices = [ 0, 1, 2, 3 ];
-				textCoords = [  -2.75, -2.75,
-								3.75, -2.75,
-								-2.75, 3.75,
-								3.75, 3.75 ];
+				textCoords = [  -2.5, -2.5,
+								3.5, -2.5,
+								-2.5, 3.5,
+								3.5, 3.5 ];
 				tangents = [ 1.0, 0.0, 0.0,
 							 1.0, 0.0, 0.0,
 							 1.0, 0.0, 0.0,
@@ -277,20 +277,22 @@
 			function sliderBrokenIntensityChanged(){
 				brokenGlassIntensity = document.getElementById("brokenGlassIntensity").value;
 				document.getElementById("spanBrok").innerHTML = "<span id=\"spanBrok\"><label> Broken Intensity : "+brokenGlassIntensity+" %</label></span>";
-				
-
 			}
 
 			function sliderLightIntensityChanged(){
 				currentLightIntensity = document.getElementById("lightIntensitySlider").value;
+			}
+
+			function sliderImgIndice(){
+				currentColorMapID = document.getElementById("idImage").value;
+				document.getElementById("spanIndiceImage").innerHTML = "<span id=\"spanIndiceImage\"><label>"+currentColorMapID+"</label></span>";
 			}
 		</script>
 	</head>
 	<body onload="initWebGL()">
         <script>displayTitle("Infographie - Labo 1 - MONNET PAYSANT - Génération images Discovery", 1,1,1,1,1,1,1);</script>
 		<nav>
-		<a href="#webgl-canvas">Aller directement aux manipulations.</a>  <a href="https://github.com/adrienpaysant/Infographie/tree/main/Labo1" target="_blank">Lien vers le git</a>
-		</nav>
+		<a href="#webgl-canvas">Aller directement aux manipulations.</a></nav>
 		<h2>Choix du sujet </h2>
         <p>Je suis l'explication du choix du sujet</p>
 		<hr>
@@ -309,27 +311,89 @@
 			<br />
 			<span id="spanID1"><button id="colorMapButton" onclick="changeColorMap()">Texture [1]</button></span>
 
-			<input type="range" id="brokenGlassIntensity" value="33" min="0" step="33" max="99" oninput="sliderBrokenIntensityChanged();">
-			<span id="spanBrok"><label> Broken Intensity : 33 %</label></span>
+			<input type="range" id="brokenGlassIntensity" value="50" min="0" step="50" max="100" oninput="sliderBrokenIntensityChanged();">
+			<span id="spanBrok"><label> Broken Intensity : 50 %</label></span>
 
 		</p>
 		<input id="animateCheckBox" type="checkbox" checked=true onchange="animateObject()">Rotation de la source de lumière</input> de rayon : 1.0
-		<input type="range" id="rotLightRadiusSlider" value="3" min="1" max="7" step="2" oninput="sliderRotLightRadiusChanged();">7.0<br />
+		<input type="range" id="rotLightRadiusSlider" value="3" min="1" max="5" step="2" oninput="sliderRotLightRadiusChanged();">5.0<br />
 		Intensité de la lumière : 13.0<input type="range" id="lightIntensitySlider" value="13" step="7" min="13" max="27" oninput="sliderLightIntensityChanged();">27.0<br />
         
-        Inclinaison du plan Horizontale : -30°<input type="range" id="sliderHorizon" value="0"  step="15" min="-30" max="30" oninput="sliderHorizon();">30°
+        Inclinaison du plan Verticale : -15°<input type="range" id="sliderHorizon" value="0"  step="15" min="-15" max="15" oninput="sliderHorizon();">15°
 			<span id="spanH"><label> value : 0</label></span>
 			<br>
-			Inclinaison du plan Verticale : -30°<input type="range" id="sliderVertical" step="15" value="0" min="-30" max="30" oninput="sliderVertical();">30°
+			Inclinaison du plan Horizontal : -15°<input type="range" id="sliderVertical" step="15" value="0" min="-15" max="15" oninput="sliderVertical();">15°
 			<span id="spanV"><label> value : 0</label></span>
             <br>
         <!-- WebGL canvas -->
 		<canvas id="webgl-canvas" width="400" height="400">
 			HTML5 is not supported
 		</canvas>
-		
+		<a id="download" download="myImage.png" href="" onclick="download_img(this);">Download</a>
+		<hr>
+		<h3>Automatisation</h3>
+		Choisissez indice image : <input type="range" id="idImage" value="1" min="0" max="11" step="1" oninput="sliderImgIndice();"><span id="spanIndiceImage"><label> 1</label></span><br>
+		<input type="button" name="btnStart" id="btnStart" onclick="start_process();" value="C'est Parti !">
 
 		<script>
+			function start_process(){
+				let indexTosave=0;
+				//parcours texture vers
+				for(brokenGlassIntensity=0;brokenGlassIntensity<=100;brokenGlassIntensity=brokenGlassIntensity+50){
+					//parcours rot raduis
+					for(lightRotRadius=1;lightRotRadius<=5;lightRotRadius=lightRotRadius+2){
+						//parcrous intensité lumière
+						for(currentLightIntensity=13;currentLightIntensity<=27;currentLightIntensity=currentLightIntensity+7){
+							//parcours vertical
+							for(vAngle=-15;vAngle<=15;vAngle=vAngle+15){
+								//parcours horizontal
+								for(hAngle=-15;hAngle<=15;hAngle=hAngle+15){
+									saveImage("webgl-canvas",currentColorMapID+"_"+(indexTosave++)+".png");
+									drawScene();
+								}
+							}
+						}
+					}
+
+				}
+			}
+
+			//depuis : https://nosmoking.developpez.com/demos/js/canvas-download.html
+			function saveImage(idCanvas, nomFichier) {
+				// nom du fichier pour l'enregistrement
+				const nomFile = nomFichier || "image.png";
+				// récup. de l'élément <canvas>
+				const canvas = document.getElementById(idCanvas);
+				let dataImage;
+				// pour IE et Edge c'est simple !!!
+				// https://technet.microsoft.com/en-us/windows/hh771732(v=vs.60)
+				if (canvas.msToBlob) {
+				// crée un objet blob contenant le dessin du canvas
+				dataImage = canvas.msToBlob();
+				// affiche l'invite d'enregistrement
+				window.navigator.msSaveBlob(dataImage, nomFile);
+				}
+				else {
+				// création d'un lien HTML5 download
+				const lien = document.createElement("A");
+				// récup. des data de l'image
+				dataImage = canvas.toDataURL("image/png");
+				// affectation d'un nom à l'image
+				lien.download = nomFile;
+				// modifie le type de données
+				dataImage = dataImage.replace("image/png", "image/octet-stream");
+				// affectation de l'adresse
+				lien.href = dataImage;
+				// ajout de l'élément
+				document.body.appendChild(lien);
+				// simulation du click
+				lien.click();
+				// suppression de l'élément devenu inutile
+				document.body.removeChild(lien);
+				}
+			}
+
+			//pour le lien
 			function download_img(el) {
 			var canvas = document.getElementById("webgl-canvas");
 			var ctx = canvas.getContext("3d");
@@ -337,7 +401,5 @@
 			el.href = imageURI;
 			};
 		</script>
-
-		<a id="download" download="myImage.png" href="" onclick="download_img(this);">Download</a>
 	</body>
 </html>
