@@ -116,7 +116,7 @@ function getGLContext(canvasName) {
 
     for (var i = 0; i < names.length; i++) {
         try {
-			gl = canvas.getContext(names[i]); // no blending
+			gl = canvas.getContext(names[i], {preserveDrawingBuffer: true}); // no blending preservedrawing to save image
 
 			//*** for transparency (Blending) ***
             //gl = canvas.getContext(names[i], {premultipliedAlpha: false});

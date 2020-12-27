@@ -379,21 +379,9 @@
 		<canvas id="webgl-canvas" width="400" height="400">
 			HTML5 is not supported
 		</canvas>
-		<br>
-		<canvas id="canvas"></canvas>
-		<div style="display:none;">
-		<img id="source" src="sourceProf/0.png"
-			width="300" height="227">
-		</div>
+		
 
 		<script>
-
-			var canvas = document.getElementById("canvas");
-			var ctx = canvas.getContext("2d");
-			var image = document.getElementById("source");
-			ctx.drawImage(image, 0, 0);
-
-
 			function download_img(el) {
 			var canvas = document.getElementById("webgl-canvas");
 			 var ctx = canvas.getContext("3d");
