@@ -174,48 +174,10 @@
 				let intens =brokenGlassIntensity/100;
 				
 				glContext.uniform3f(prg.difUniform, intens, intens, intens); 
-				switch( currentSpecularMapID ) {
-					case 1: {
-							glContext.uniform3f(prg.specUniform, 0.2, 0.2, 0.2);
-							glContext.uniform1f(prg.shininessUniform, 1.0);
-						} break;
-					case 2: {
-							glContext.uniform3f(prg.specUniform, 1.0, 1.0, 1.0);
-							glContext.uniform1f(prg.shininessUniform, 4.0);
-						} break;
-					case 3: {
-							glContext.uniform3f(prg.specUniform, 0.8, 0.8, 0.7);
-							glContext.uniform1f(prg.shininessUniform, 8.0);
-						} break;
-					case 4: {
-							glContext.uniform3f(prg.specUniform, 1.0, 1.0, 1.0);
-							glContext.uniform1f(prg.shininessUniform, 14.0);
-						} break;
-					case 5: {
-							glContext.uniform3f(prg.specUniform, 1.0, 0.3, 1.0);
-							glContext.uniform1f(prg.shininessUniform, 2.0);
-						} break;
-					case 6: {
-							glContext.uniform3f(prg.specUniform, 1.0, 0.3, 1.0);
-							glContext.uniform1f(prg.shininessUniform, 2.0);
-						} break;
-					case 7: {
-							glContext.uniform3f(prg.specUniform, 1.0, 0.3, 1.0);
-							glContext.uniform1f(prg.shininessUniform, 2.0);
-						} break;
-					case 8: {
-							glContext.uniform3f(prg.specUniform, 1.0, 0.3, 1.0);
-							glContext.uniform1f(prg.shininessUniform, 2.0);
-						} break;
-					case 9: {
-							glContext.uniform3f(prg.specUniform, 1.0, 0.3, 1.0);
-							glContext.uniform1f(prg.shininessUniform, 2.0);
-						} break;
-					case 10: {
-							glContext.uniform3f(prg.specUniform, 1.0, 0.3, 1.0);
-							glContext.uniform1f(prg.shininessUniform, 2.0);
-						} break;
-				}
+				
+				glContext.uniform3f(prg.specUniform, 0.2, 0.2, 0.2);
+				glContext.uniform1f(prg.shininessUniform, 1.0);
+					
 			}
 			function setLightPositionAndIntensity()
 			{
@@ -236,7 +198,7 @@
 				mat4.identity(mvMatrix);
                 mat4.translate(mvMatrix, mvMatrix, [0.0, 0.0, -2.0]);
                 
-                		//rotation selon les deux axes
+                //rotation selon les deux axes
 				mat4.rotate(mvMatrix,mvMatrix,-hAngle*3.14/180.0, [1,0,0]);
                 mat4.rotate(mvMatrix,mvMatrix,-vAngle*3.14/180.0, [0,1,0]);
                 
@@ -249,8 +211,7 @@
 			    glContext.uniformMatrix4fv(prg.nMatrixUniform, false, nMatrix);
 				initMaterialProperties();
 				glContext.uniform1i(prg.usingColorMapUniform, document.getElementById( "useColorMapCheckBox" ).checked);
-				glContext.uniform1i(prg.usingColorMapUniform, document.getElementById( "userBrokenGlassCheckBox" ).checked);
-				glContext.uniform1i(prg.usingNormalMapUniform, document.getElementById( "useDirtGlassCheckBox" ).checked);
+				glContext.uniform1i(prg.usingNormalMapUniform, document.getElementById( "userBrokenGlassCheckBox" ).checked);
 				
 				glContext.bindBuffer(glContext.ARRAY_BUFFER, normalBuffer);
 				glContext.vertexAttribPointer(prg.vertexNormalAttribute, 3, glContext.FLOAT, false, 0, 0);
@@ -343,11 +304,9 @@
         <p>
 			<input id="useColorMapCheckBox" type="checkbox" checked=true onchange="changeTheMapUse( 'useColorMapCheckBox', 'colorMapButton' )">Texture</input>
 			<input id="userBrokenGlassCheckBox" type="checkbox" checked=true disabled=true onchange="changeTheMapUse( 'userBrokenGlassCheckBox', 'normalMapButton' )">BrokenGlass</input>
-			<input id="useDirtGlassCheckBox" type="checkbox" checked=true disabled=true oninput=="changeTheMapUse( 'useDirtGlassCheckBox', 'specularMapButton' )">DirtGlass</input>
 			<br />
 			<span id="spanID1"><button id="colorMapButton" onclick="changeColorMap()">Texture [1]</button></span>
 			<input type="range" id="brokenGlassIntensity" value="50" min="1" max="100" oninput="sliderBrokenIntensityChanged();">
-			<input type="range" id="dirtGlassIntensity" value="50" min="1" max="100" oninput="">
 
 		</p>
 		<input id="animateCheckBox" type="checkbox" checked=true onchange="animateObject()">Rotation de la source de lumière</input> de rayon : 0.1<input type="range" id="rotLightRadiusSlider" value="20" min="1" max="200" oninput="sliderRotLightRadiusChanged();">20.0<br />
@@ -368,16 +327,7 @@
 		<script>
 			function download_img(el) {
 			var canvas = document.getElementById("webgl-canvas");
-			 var ctx = canvas.getContext("3d");
-			// var ox = canvas.width / 2;
-			// var oy = canvas.height / 2;
-			// ctx.font = "42px serif";
-			// ctx.textAlign = "center";
-			// ctx.textBaseline = "middle";
-			// ctx.fillStyle = "#800";
-			// ctx.fillRect(ox / 2, oy / 2, ox, oy);
-
-			// get image URI from canvas object
+			var ctx = canvas.getContext("3d");
 			var imageURI = canvas.toDataURL('image/png');
 			el.href = imageURI;
 			};
