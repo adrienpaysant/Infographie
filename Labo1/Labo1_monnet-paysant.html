@@ -225,10 +225,6 @@
 
 				glContext.activeTexture(glContext.TEXTURE1);
 				glContext.bindTexture(glContext.TEXTURE_2D, texBrokenTab[0]);
-				glContext.uniform1i(prg.uNormalMap, 0);
-
-				glContext.activeTexture(glContext.TEXTURE2);
-				glContext.bindTexture(glContext.TEXTURE_2D, texNormalTab[currentNormalMapID-1]);
 				glContext.uniform1i(prg.uNormalMap, 1);
 
 				glContext.bindBuffer(glContext.ELEMENT_ARRAY_BUFFER, indexBuffer);
