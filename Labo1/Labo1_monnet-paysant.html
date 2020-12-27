@@ -289,7 +289,7 @@
 			}
 		</script>
 	</head>
-	<body onload="initWebGL()">
+	<body onload="initWebGL()" style="padding: 3em; text-align: center;">
         <script>displayTitle("Infographie - Labo 1 - MONNET PAYSANT - Génération images Discovery", 1,1,1,1,1,1,1);</script>
 		<nav>
 		<a href="#manip">Aller directement aux manipulations.</a></nav>
@@ -315,7 +315,7 @@
 			<li>Mettre en place l'illumination de Phong pour simuler des reflets</li>
 			<li>Mettre en place une texture simulant la détérioration de l'écran</li>
 			<li>Dimensioner les variations des paramètres pour être pertinent</li>
-			<li>Mettre en place la sauvegarde du canevas webgl en image</li>
+			<li>Mettre en place la sauvegarde du canvas webgl en image</li>
 			<li>Mettre en place une routine pour sauvegarder un jeu d'images</li>
         </ul>
 		<hr>
@@ -328,7 +328,7 @@
 			On va également retirer les effets de normal map et specular map pour utiliser une texture de normal map unique.
 			<br> Cette texture sera celle de verre dégradé. Il faut alors implémenter une variation de l'intensité de cette texture.
 			<br> La mise en place du téléchargement de l'image est réalisée en utilisant un lien.
-			<br> Il en est proposé deux implémentation, la première permet de récupérer l'image que l'on manipule dans le canevas.
+			<br> Il en est proposé deux implémentation, la première permet de récupérer l'image que l'on manipule dans le canvas.
 			<br> La seconde est utilisé lors de l'automatisation du traitement.
 			<br>
 			<br> Pour le choix des paramètres, on aura  : 
@@ -356,6 +356,13 @@
 
 				<br> La solution immédiate pour pallier à ce problème est d'utiliser FireFox, navigateur sur lequel la manipulation fonctionne à 100%.
 			</p>
+			<br><h3>Problème de l'image vide</h3>
+			<p>
+				Lors de la sauvegarde du canvas, dans un premier temps les images enregistrées étaient vide.
+				<br>La cause du problème est que le canvas se "nettoyait" avant que l'image soit capturée.
+				<br>Pour palier à ce problème il faut ajouter <code>gl = canvas.getContext(names[i], {preserveDrawingBuffer: true});</code> l'attribut preserveDrawingBuffer à vrai lors de la création du context web gl du canvas.
+
+			</p>
 		</p>
 		<hr>
 		<h2 id="manip">Manipulations  </h2><br>
@@ -382,7 +389,7 @@
         <!-- WebGL canvas -->
 		<canvas id="webgl-canvas" width="400" height="400">
 			HTML5 is not supported
-		</canvas>
+		</canvas><br>
 		<a id="download" download="myImage.png" href="" onclick="download_img(this);">Download</a>
 		<hr>
 		<h3>Automatisation</h3>
@@ -414,7 +421,7 @@
 				}
 			}
 
-			//depuis : https://nosmoking.developpez.com/demos/js/canvas-download.html
+			
 			function saveImage(idCanvas, nomFichier) {
 				// nom du fichier pour l'enregistrement
 				const nomFile = nomFichier || "image.png";
@@ -460,7 +467,12 @@
 
 		<hr>
 		<h2>Sources</h2>
-		<p>je suis la source</p>
+		<ul style="display: flex; text-align: center;">
+			<a href="https://nosmoking.developpez.com/demos/js/canvas-download.html" target="_blank">implémentation de la sauvegarde du canvas</a>
+			<a href="http://webgl3d.info/" target="_blank">WegGL par la pratique, Stéphane Gobron, Mario Gutiérrez, Presses polytechniques et universitaires romandes. 2015</a>
+			<a href="https://webgl2fundamentals.org/webgl/lessons/webgl-tips.html" target="_blank">Résolution problème image vide</a>
+			<a href="https://opengameart.org/content/broken-glass-batch-of-7-seamless-textures-with-normalmaps-wirereinforcedcracknjpg" target="_blank">Texture de verre abimé</a>
+		</ul>
 	</body>
 	<footer style="text-align: center;">
 		<br>
