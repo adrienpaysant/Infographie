@@ -294,11 +294,29 @@
 		<nav>
 		<a href="#webgl-canvas">Aller directement aux manipulations.</a></nav>
 		<h2>Choix du sujet </h2>
-        <p>Je suis l'explication du choix du sujet</p>
+        <p>
+			Le but de ce labo 1 en WebGl est de permettre la génération de données en vue d'entrainer Tesseract qui est un outils de
+			reconnaissance optique de caractère. <br> En effet l'un des membres du groupe de ce labo utilise Tesseract dans le cadre de son projet P3.
+			<br>
+		La création de données en grand nombre pourrait permettre de faciliter l'entrainement de cet outils ou à tout moins permettre de fournir
+			une base de données consistante.
+			<br>
+			Le sujet du P3 (P3-Discovery) est la reconnaissance de caractère depuis un multimètre via une webcam.
+			<br>Le but d'entrainer Tesseract est de rendre plus résistante cette reconnaissance. <br> En entrainant via une
+			diversité d'éclairage et en simulant des détériorations de l'écran du multimètre, nous pouvons faire gagner de la robustesse à Tesseract <br>
+			face à différentes conditions matérielles. 
+		</p>
 		<hr>
         <h2>Objectifs  </h2>
         <ul>
-            <li>je suis l'élément 1 de la liste des objectifs.</li>
+			<li>Récupérer les données (0..9,-,.) dans la police Seven Segments</li>
+			<li>Mettre en place le défilement des textures</li>
+			<li>Mettre en place la manipulation de la texture verticalement et horizontalement</li>
+			<li>Mettre en place l'illumination de Phong pour simuler des reflets</li>
+			<li>Mettre en place une texture simulant la détérioration de l'écran</li>
+			<li>Dimenssioner les variations des paramètres pour être pertinent</li>
+			<li>Mettre en place la sauvegarde du canevas webgl en image</li>
+			<li>Mettre en place une routine pour sauvegarder un jeu d'images</li>
         </ul>
 		<hr>
 		<h2>Explications de la démarche  </h2>
@@ -332,6 +350,8 @@
 		<a id="download" download="myImage.png" href="" onclick="download_img(this);">Download</a>
 		<hr>
 		<h3>Automatisation</h3>
+		Note : les images s'enregistrent dans le dossier téléchargement.
+		<br>
 		Choisissez indice image : <input type="range" id="idImage" value="1" min="0" max="11" step="1" oninput="sliderImgIndice();"><span id="spanIndiceImage"><label> 1</label></span><br>
 		<input type="button" name="btnStart" id="btnStart" onclick="start_process();" value="C'est Parti !">
 
