@@ -306,8 +306,8 @@
 		<hr>
 		<h2>Manipulations  </h2><br>
         <p>
-			<input id="useColorMapCheckBox" type="checkbox" checked=true onchange="changeTheMapUse( 'useColorMapCheckBox', 'colorMapButton' )">Texture</input>
-			<input id="userBrokenGlassCheckBox" type="checkbox" checked=true disabled=true onchange="changeTheMapUse( 'userBrokenGlassCheckBox', 'normalMapButton' )">BrokenGlass</input>
+			<input id="useColorMapCheckBox" type="checkbox" hidden checked=true onchange="changeTheMapUse( 'useColorMapCheckBox', 'colorMapButton' )">Texture</input>
+			<input id="userBrokenGlassCheckBox" type="checkbox" hidden checked=true disabled=true onchange="changeTheMapUse( 'userBrokenGlassCheckBox', 'normalMapButton' )">BrokenGlass</input>
 			<br />
 			<span id="spanID1"><button id="colorMapButton" onclick="changeColorMap()">Texture [1]</button></span>
 
@@ -339,15 +339,25 @@
 			function start_process(){
 				let indexTosave=0;
 				//parcours texture vers
-				for(brokenGlassIntensity=0;brokenGlassIntensity<=100;brokenGlassIntensity=brokenGlassIntensity+50){
+				for(let _brokenGlassIntensity=0;_brokenGlassIntensity<=100;_brokenGlassIntensity+=50){
 					//parcours rot raduis
-					for(lightRotRadius=1;lightRotRadius<=5;lightRotRadius=lightRotRadius+2){
+					brokenGlassIntensity=_brokenGlassIntensity;
+					drawScene();
+					for(let _lightRotRadius=1;_lightRotRadius<=5;_lightRotRadius+=2){
 						//parcrous intensité lumière
-						for(currentLightIntensity=13;currentLightIntensity<=27;currentLightIntensity=currentLightIntensity+7){
+						lightRotRadius=_lightRotRadius;
+						drawScene();
+						for(let _currentLightIntensity=13;_currentLightIntensity<=27;_currentLightIntensity+=7){
 							//parcours vertical
-							for(vAngle=-15;vAngle<=15;vAngle=vAngle+15){
+							currentLightIntensity=_currentLightIntensity;
+							drawScene();
+							for(let _vAngle=-15;_vAngle<=15;_vAngle+=15){
 								//parcours horizontal
-								for(hAngle=-15;hAngle<=15;hAngle=hAngle+15){
+								vAngle=_vAngle;
+								drawScene();
+								for(let _hAngle=-15;_hAngle<=15;_hAngle+=15){
+									hAngle=_hAngle;
+									drawScene();
 									saveImage("webgl-canvas",currentColorMapID+"_"+(indexTosave++)+".png");
 									drawScene();
 								}
