@@ -219,11 +219,11 @@
 				glContext.bindBuffer(glContext.ARRAY_BUFFER, tangentsBuffer);
 				glContext.vertexAttribPointer(prg.tangentsAttribute, 3, glContext.FLOAT, false, 0, 0);
 				
-				glContext.activeTexture(glContext.TEXTURE1);
+				glContext.activeTexture(glContext.TEXTURE0);
 				glContext.bindTexture(glContext.TEXTURE_2D, texColorTab[currentColorMapID]);
 				glContext.uniform1i(prg.uColorTexture, 0);
 
-				glContext.activeTexture(glContext.TEXTURE0);
+				glContext.activeTexture(glContext.TEXTURE1);
 				glContext.bindTexture(glContext.TEXTURE_2D, texBrokenTab[0]);
 				glContext.uniform1i(prg.uNormalMap, 1);
 
